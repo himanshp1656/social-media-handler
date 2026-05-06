@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Templates - Content Engine{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+      <h2>Script Templates</h2>
+      <p>Save winning script structures and reuse them for new briefs</p>
+    </div>
+  </div>
+</div>
+
+{% if templates %}
+<div class="template-grid">
+  {% for t in templates %}
+  <div class="card template-card" id="tpl-{{ t.id }}">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+      <h3 style="font-size: 15px; font-weight: 600;">{{ t.name }}</h3>
+      <button class="btn btn-sm" style="background: rgba(239,68,68,0.1); color: var(--red); border: none; font-size: 11px;" onclick="deleteTemplate('{{ t.id }}')">Delete</button>
+    </div>
+    {% if t.description %}
+    <p style="font-size: 13px; color: var(--text-dim); margin-bottom: 12px;">{{ t.description }}</p>
+    {% endif %}
+    <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+      <span class="badge badge-{{ t.angle }}">{{ t.angle.replace('_', ' ') }}</span>
+      <span class="badge badge-{{ t.hook_type }}">{{ t.hook_type }}</span>
+      <span class="badge" style="background: rgba(99,102,241,0.15); color: var(--accent);">{{ t.platform.replace('_', ' ') }}</span>
+      <span class="badge" style="background: rgba(34,197,94,0.15); color: var(--green);">{{ t.duration }}</span>
+      <span class="badge" style="background: rgba(236,72,153,0.15); color: var(--pink);">{{ t.cta_goal }}</span>
+    </div>
+    <div style="margin-bottom: 12px;">
+      <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 6px;">Beat Structure</div>
+      <div style="display: flex; gap: 4px;">
+        {% for beat in t.beat_structure %}
+        <div style="flex: {{ beat.duration_seconds }}; padding: 6px 8px; background: var(--bg-input); border-radius: 4px; text-align: center; font-size: 11px; border-top: 2px solid {% if beat.type == 'hook' %}var(--red){% elif beat.type == 'problem' %}var(--orange){% elif beat.type == 'insight' %}var(--accent){% elif beat.type == 'proof' %}var(--green){% else %}var(--pink){% endif %};">
+          {{ beat.type }}<br><span style="color: var(--text-dim);">{{ beat.duration_seconds }}s</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <a href="/ui/generate?template_id={{ t.id }}" class="btn btn-sm btn-primary">Use Template</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <div class="icon">&#9998;</div>
+    <h3>No templates yet</h3>
+    <p>Generate scripts, find the best performers, and save their structure as a reusable template from the brief detail page.</p>
+  </div>
+</div>
+{% endif %}
+
+<style>
+  .template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 16px;
+  }
+  .template-card {
+    border: 1px solid var(--border);
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function deleteTemplate(id) {
+  if (!confirm('Delete this template?')) return;
+  try {
+    const res = await fetch('/scripts/templates/' + id, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.deleted) {
+      document.getElementById('tpl-' + id).remove();
+      showToast('Template deleted', 'success');
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Trends - Content Engine{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+      <h2>Trend Suggestions</h2>
+      <p>AI-generated content ideas from Google Trends and finance news</p>
+    </div>
+    <button class="btn btn-primary" id="fetchTrendsBtn" onclick="fetchTrends()">
+      Fetch Fresh Trends
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  {% if suggestions %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Keyword</th>
+          <th>Source</th>
+          <th>Score</th>
+          <th>Suggested Brief</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in suggestions %}
+        <tr id="row-{{ s.id }}">
+          <td style="font-weight: 500;">{{ s.keyword }}</td>
+          <td><span class="badge badge-{{ s.source }}">{{ s.source.replace('_', ' ') }}</span></td>
+          <td>{{ s.trend_score }}</td>
+          <td style="max-width: 300px;">{{ s.suggested_brief }}</td>
+          <td>
+            <span class="badge badge-{% if s.status == 'accepted' %}opportunity{% elif s.status == 'rejected' %}fear{% elif s.status == 'used' %}news_based{% else %}curiosity{% endif %}">
+              {{ s.status }}
+            </span>
+          </td>
+          <td>
+            <div class="suggestion-actions">
+              {% if s.status == 'suggested' %}
+              <a href="/ui/generate?brief={{ s.suggested_brief | urlencode }}&suggestion_id={{ s.id }}" class="btn btn-sm btn-primary" onclick="markAccepted('{{ s.id }}')">Use</a>
+              <button class="btn btn-sm btn-secondary" onclick="updateStatus('{{ s.id }}', 'rejected')">Skip</button>
+              {% endif %}
+              {% if s.status == 'used' %}
+              <a href="/ui/lineage/trend/{{ s.id }}" class="btn btn-sm btn-secondary">Lineage</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">&#8593;</div>
+    <h3>No trend suggestions yet</h3>
+    <p>Click "Fetch Fresh Trends" to pull Google Trends and finance news</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function fetchTrends() {
+  const btn = document.getElementById('fetchTrendsBtn');
+  btn.disabled = true;
+  showLoading('Pulling trends from Google and news sources...');
+
+  try {
+    const res = await fetch('/trends/suggest', { method: 'POST' });
+    if (!res.ok) throw new Error('Failed to fetch trends');
+    const data = await res.json();
+    showToast('Found ' + data.count + ' new suggestions!', 'success');
+    setTimeout(() => location.reload(), 1000);
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+    btn.disabled = false;
+  }
+}
+
+function markAccepted(id) {
+  fetch('/trends/suggestions/' + id + '?status=accepted', { method: 'PATCH' });
+}
+
+async function updateStatus(id, status) {
+  try {
+    const res = await fetch('/trends/suggestions/' + id + '?status=' + status, { method: 'PATCH' });
+    if (!res.ok) throw new Error('Update failed');
+    location.reload();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+</script>
+{% endblock %}

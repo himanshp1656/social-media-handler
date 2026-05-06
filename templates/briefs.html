@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Briefs - Content Engine{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Content Briefs</h2>
+  <p>All your generated content briefs and their scripts</p>
+</div>
+
+<div class="card">
+  {% if briefs %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Brief</th>
+          <th>Topic</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in briefs %}
+        <tr>
+          <td>{{ b.raw_brief[:70] }}{% if b.raw_brief|length > 70 %}...{% endif %}</td>
+          <td>{{ b.topic }}</td>
+          <td style="color: var(--text-dim); font-size: 13px;">{{ b.created_at[:10] if b.created_at else '' }}</td>
+          <td><a href="/ui/briefs/{{ b.id }}" class="btn btn-sm btn-secondary">View Scripts</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">&#9776;</div>
+    <h3>No briefs yet</h3>
+    <p>Go to <a href="/ui/generate">Generate</a> to create your first scripts.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

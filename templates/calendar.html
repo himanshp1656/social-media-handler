@@ -1,0 +1,442 @@
+{% extends "base.html" %}
+{% block title %}Calendar - ScriptLab{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h2>{{ month_name }}</h2>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <a href="/ui/calendar?date={{ prev_month }}" class="btn btn-secondary btn-sm" style="font-size:16px;padding:6px 14px;">&#8249;</a>
+      <a href="/ui/calendar" class="btn btn-secondary btn-sm">Today</a>
+      <a href="/ui/calendar?date={{ next_month }}" class="btn btn-secondary btn-sm" style="font-size:16px;padding:6px 14px;">&#8250;</a>
+    </div>
+  </div>
+</div>
+
+<!-- Month Calendar -->
+<div class="cal-wrap">
+  <!-- Day-of-week headers -->
+  <div class="cal-header">
+    {% for d in ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"] %}
+    <div class="cal-hdr-cell">{{ d }}</div>
+    {% endfor %}
+  </div>
+  <!-- Day cells -->
+  <div class="cal-grid">
+    {% for week in grid %}
+      {% for day in week %}
+      <div class="cal-cell{% if not day.is_current_month %} cal-outside{% endif %}{% if day.is_today %} cal-today{% endif %}"
+           data-date="{{ day.date }}"
+           onclick="openDay(this)">
+        <span class="cal-num">{{ day.day }}</span>
+        {% if day.posts %}
+        <div class="cal-events">
+          {% for post in day.posts[:3] %}
+          <div class="cal-chip cal-chip-{{ post.status }}">
+            <span class="cal-chip-dot"></span>
+            <span class="cal-chip-label">{{ post.time }} {{ post.title[:18] }}{% if post.title|length > 18 %}…{% endif %}</span>
+          </div>
+          {% endfor %}
+          {% if day.posts|length > 3 %}
+          <div class="cal-more">+{{ day.posts|length - 3 }} more</div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Day Drawer -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="dayDrawer">
+  <div class="drawer-header">
+    <div class="drawer-date" id="drawerDate"></div>
+    <button class="btn-icon" onclick="closeDrawer()" style="font-size:22px;color:var(--text-dim);line-height:1;">&times;</button>
+  </div>
+
+  <!-- Posts for this day -->
+  <div id="drawerPosts"></div>
+
+  <!-- Schedule form -->
+  <div class="drawer-section">
+    <div class="drawer-section-title">Schedule a Post</div>
+    <form id="scheduleForm" enctype="multipart/form-data">
+      <input type="hidden" name="scheduled_at" id="scheduledAtInput">
+      <div class="form-group">
+        <label>Script</label>
+        <select name="script_id" required>
+          <option value="">Select a script...</option>
+          {% for s in scripts %}
+          <option value="{{ s.id }}">{{ s.title }} ({{ s.angle }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Video File</label>
+        <input type="file" name="video" accept="video/*" required>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label>Time (UTC)</label>
+          <input type="time" name="post_time" id="postTime" value="12:00"
+            style="width:100%;padding:10px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:inherit;">
+        </div>
+        <div class="form-group">
+          <label>Privacy</label>
+          <select name="privacy_status">
+            <option value="public">Public</option>
+            <option value="unlisted">Unlisted</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <input type="text" name="notes" placeholder="Any notes about this post...">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:4px;">Schedule</button>
+    </form>
+  </div>
+</div>
+
+<!-- Embed posts data for JS -->
+<script id="calDataScript" type="application/json">
+{
+  {% for week in grid %}{% for day in week %}{% if day.posts %}"{{ day.date }}": {{ day.posts | tojson }}{% if not loop.last %},{% endif %}
+  {% endif %}{% endfor %}{% endfor %}
+}
+</script>
+
+<style>
+/* ---- Month Grid ---- */
+.cal-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.cal-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--bg-card-hover);
+  border-bottom: 1px solid var(--border);
+}
+.cal-hdr-cell {
+  padding: 10px 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.cal-cell {
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  min-height: 100px;
+  padding: 8px 6px 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: background 0.1s;
+}
+.cal-cell:nth-child(7n) { border-right: none; }
+.cal-cell:hover { background: var(--bg-card-hover); }
+.cal-outside { opacity: 0.28; pointer-events: none; }
+.cal-num {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+.cal-today .cal-num {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+}
+.cal-events {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 2px;
+}
+.cal-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  background: var(--accent-dim);
+  overflow: hidden;
+}
+.cal-chip-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--accent);
+}
+.cal-chip-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+.cal-chip-scheduled  { background: var(--accent-dim); }
+.cal-chip-scheduled .cal-chip-dot { background: var(--accent); }
+.cal-chip-posted     { background: var(--green-dim); }
+.cal-chip-posted .cal-chip-dot { background: var(--green); }
+.cal-chip-failed     { background: var(--red-dim); }
+.cal-chip-failed .cal-chip-dot { background: var(--red); }
+.cal-chip-missed     { background: var(--yellow-dim); }
+.cal-chip-missed .cal-chip-dot { background: var(--yellow); }
+.cal-chip-posting    { background: var(--cyan-dim); }
+.cal-chip-posting .cal-chip-dot { background: var(--cyan); }
+.cal-more {
+  font-size: 10px;
+  color: var(--text-muted);
+  padding-left: 5px;
+}
+
+/* ---- Drawer ---- */
+.drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(5,5,7,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+}
+.drawer-overlay.active { display: block; }
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  max-width: 100vw;
+  height: 100vh;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 40px rgba(0,0,0,0.4);
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.drawer.active { transform: translateX(0); }
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  z-index: 1;
+  flex-shrink: 0;
+}
+.drawer-date {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.drawer-posts-wrap {
+  padding: 16px 20px 0;
+}
+.drawer-posts-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.drawer-post-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-bottom: 7px;
+  background: var(--bg-input);
+}
+.drawer-post-time {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 38px;
+  flex-shrink: 0;
+}
+.drawer-post-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text);
+}
+.drawer-post-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.drawer-empty {
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+.drawer-section {
+  padding: 20px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+.drawer-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+}
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  transition: background var(--transition);
+}
+.btn-icon:hover { background: rgba(255,255,255,0.05); }
+
+@media (max-width: 768px) {
+  .cal-cell { min-height: 60px; padding: 6px 4px; }
+  .cal-chip-label { display: none; }
+  .cal-chip { padding: 3px; }
+  .drawer { width: 100vw; }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Parse embedded posts data
+let CAL_DATA = {};
+try {
+  const raw = document.getElementById('calDataScript').textContent.trim();
+  // Remove trailing commas before } (from Jinja loop edge cases)
+  const cleaned = raw.replace(/,\s*([\]}])/g, '$1');
+  CAL_DATA = JSON.parse(cleaned);
+} catch(e) { CAL_DATA = {}; }
+
+let currentDate = '';
+
+function formatDrawerDate(ds) {
+  const d = new Date(ds + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+function statusColor(status) {
+  return { scheduled: 'var(--accent)', posted: 'var(--green)', failed: 'var(--red)', missed: 'var(--yellow)', posting: 'var(--cyan)' }[status] || 'var(--accent)';
+}
+
+function openDay(el) {
+  currentDate = el.dataset.date;
+  document.getElementById('drawerDate').textContent = formatDrawerDate(currentDate);
+
+  const posts = CAL_DATA[currentDate] || [];
+  const postsEl = document.getElementById('drawerPosts');
+
+  if (posts.length > 0) {
+    let html = '<div class="drawer-posts-wrap"><div class="drawer-posts-label">' + posts.length + ' post' + (posts.length > 1 ? 's' : '') + '</div>';
+    posts.forEach(p => {
+      html += `<div class="drawer-post-item">
+        <span class="drawer-post-time">${p.time}</span>
+        <span class="drawer-post-title">${p.title}</span>
+        <span class="drawer-post-status" style="background:${statusColor(p.status)}"></span>
+        <span class="badge badge-${p.status}" style="font-size:10px;">${p.status}</span>
+        ${p.status === 'scheduled' ? `<button class="btn-icon" title="Delete" onclick="deletePost('${p.id}',event)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        </button>` : ''}
+      </div>`;
+    });
+    html += '</div>';
+    postsEl.innerHTML = html;
+  } else {
+    postsEl.innerHTML = '<div class="drawer-empty">No posts scheduled for this day</div>';
+  }
+
+  document.getElementById('drawerOverlay').classList.add('active');
+  document.getElementById('dayDrawer').classList.add('active');
+}
+
+function closeDrawer() {
+  document.getElementById('drawerOverlay').classList.remove('active');
+  document.getElementById('dayDrawer').classList.remove('active');
+}
+
+document.getElementById('scheduleForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const time = form.post_time.value || '12:00';
+  form.scheduled_at.value = currentDate + 'T' + time + ':00';
+
+  const formData = new FormData(form);
+  showLoading('Scheduling post...');
+  try {
+    const res = await fetch('/calendar/schedule', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.error) {
+      showToast(data.error, 'error');
+    } else {
+      showToast('Scheduled!', 'success');
+      closeDrawer();
+      setTimeout(() => location.reload(), 800);
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+  }
+});
+
+async function deletePost(postId, e) {
+  e.stopPropagation();
+  if (!confirm('Delete this scheduled post?')) return;
+  showLoading('Deleting...');
+  try {
+    const res = await fetch('/calendar/' + postId, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.error) { showToast(data.error, 'error'); }
+    else { showToast('Deleted', 'success'); closeDrawer(); setTimeout(() => location.reload(), 500); }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+</script>
+{% endblock %}

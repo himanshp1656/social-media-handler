@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teleprompter — {{ script.title }}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    .controls {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      background: rgba(0,0,0,0.9); border-bottom: 1px solid #222;
+      padding: 12px 24px; display: flex; align-items: center; gap: 16px;
+      transition: opacity 0.3s;
+    }
+    .controls.hidden { opacity: 0; pointer-events: none; }
+    .controls label { font-size: 13px; color: #888; }
+    .controls input[type="range"] { width: 100px; }
+    .controls button {
+      background: #6366f1; color: #fff; border: none; padding: 8px 16px;
+      border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;
+    }
+    .controls button.secondary { background: #333; }
+    .controls .title { flex: 1; font-size: 14px; font-weight: 600; }
+    .controls .speed-display { font-size: 13px; color: #6366f1; min-width: 40px; }
+
+    .prompter {
+      flex: 1; padding: 120px 10% 60vh; overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+    .beat-block {
+      margin-bottom: 48px; padding: 24px 0;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .beat-label {
+      font-size: 14px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 8px; opacity: 0.5;
+    }
+    .beat-label.hook { color: #ef4444; }
+    .beat-label.problem { color: #f97316; }
+    .beat-label.insight { color: #6366f1; }
+    .beat-label.proof { color: #22c55e; }
+    .beat-label.cta { color: #ec4899; }
+    .beat-label.twist { color: #eab308; }
+
+    .beat-time { font-size: 16px; color: #444; font-family: monospace; margin-bottom: 12px; }
+    .beat-text {
+      font-size: 36px; line-height: 1.6; font-weight: 400;
+    }
+    .screen-text {
+      font-size: 18px; color: #6366f1; margin-top: 16px;
+      padding: 8px 16px; border-left: 3px solid #6366f1; background: rgba(99,102,241,0.05);
+    }
+
+    .scroll-indicator {
+      position: fixed; bottom: 20px; right: 20px; background: rgba(99,102,241,0.9);
+      color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px;
+      display: none;
+    }
+    .scroll-indicator.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="controls" id="controls">
+    <div class="title">{{ script.title }}</div>
+    <label>Size</label>
+    <input type="range" id="sizeSlider" min="20" max="72" value="36" oninput="changeSize(this.value)">
+    <label>Speed</label>
+    <input type="range" id="speedSlider" min="1" max="10" value="3" oninput="changeSpeed(this.value)">
+    <span class="speed-display" id="speedDisplay">3</span>
+    <button onclick="toggleScroll()" id="scrollBtn">Start Scroll</button>
+    <button class="secondary" onclick="toggleControls()">Hide Controls</button>
+    <button class="secondary" onclick="window.close()">Close</button>
+  </div>
+
+  <div class="prompter" id="prompter">
+    {% for b in beats %}
+    <div class="beat-block">
+      <div class="beat-label {{ b.type }}">{{ b.type }} &middot; {{ b.timestamp }}</div>
+      <div class="beat-text">{{ b.voiceover }}</div>
+      {% if b.on_screen_text %}
+      <div class="screen-text">ON SCREEN: {{ b.on_screen_text }}</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="scroll-indicator" id="scrollIndicator">Auto-scrolling</div>
+
+  <script>
+    let scrollInterval = null;
+    let scrollSpeed = 3;
+    let controlsVisible = true;
+
+    function changeSize(val) {
+      document.querySelectorAll('.beat-text').forEach(el => el.style.fontSize = val + 'px');
+    }
+
+    function changeSpeed(val) {
+      scrollSpeed = parseInt(val);
+      document.getElementById('speedDisplay').textContent = val;
+      if (scrollInterval) { clearInterval(scrollInterval); startAutoScroll(); }
+    }
+
+    function toggleScroll() {
+      const btn = document.getElementById('scrollBtn');
+      const indicator = document.getElementById('scrollIndicator');
+      if (scrollInterval) {
+        clearInterval(scrollInterval);
+        scrollInterval = null;
+        btn.textContent = 'Start Scroll';
+        indicator.classList.remove('active');
+      } else {
+        startAutoScroll();
+        btn.textContent = 'Stop';
+        indicator.classList.add('active');
+      }
+    }
+
+    function startAutoScroll() {
+      scrollInterval = setInterval(() => {
+        window.scrollBy(0, scrollSpeed);
+      }, 30);
+    }
+
+    function toggleControls() {
+      controlsVisible = !controlsVisible;
+      document.getElementById('controls').classList.toggle('hidden');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') { e.preventDefault(); toggleScroll(); }
+      if (e.code === 'KeyH') toggleControls();
+      if (e.code === 'ArrowUp') { scrollSpeed = Math.min(10, scrollSpeed + 1); document.getElementById('speedSlider').value = scrollSpeed; changeSpeed(scrollSpeed); }
+      if (e.code === 'ArrowDown') { scrollSpeed = Math.max(1, scrollSpeed - 1); document.getElementById('speedSlider').value = scrollSpeed; changeSpeed(scrollSpeed); }
+    });
+  </script>
+</body>
+</html>

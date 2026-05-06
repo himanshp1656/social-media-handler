@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+{% block title %}Generate Scripts - Content Engine{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Generate Scripts</h2>
+  <p>Enter a brief, pick platform + duration, get 5 beat-based short-form scripts</p>
+</div>
+
+{% if template %}
+<div class="template-banner">
+  <div>
+    <strong>Using template: {{ template.name }}</strong>
+    <p>{{ template.angle.replace('_', ' ') }} + {{ template.hook_type }} / {{ template.duration }} / {{ template.platform.replace('_', ' ') }} / CTA: {{ template.cta_goal }}</p>
+    <div style="display: flex; gap: 4px; margin-top: 6px;">
+      {% for beat in template.beat_structure %}
+      <div style="padding: 3px 8px; background: var(--bg-input); border-radius: 4px; font-size: 11px; border-top: 2px solid {% if beat.type == 'hook' %}var(--red){% elif beat.type == 'problem' %}var(--orange){% elif beat.type == 'insight' %}var(--accent){% elif beat.type == 'proof' %}var(--green){% else %}var(--pink){% endif %};">
+        {{ beat.type }} {{ beat.duration_seconds }}s
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <a href="/ui/generate" class="btn btn-sm btn-secondary">Clear Template</a>
+</div>
+{% endif %}
+
+<div class="card" style="max-width: 700px; margin-bottom: 32px;">
+  <form id="generateForm">
+    <input type="hidden" id="templateId" value="{{ template.id if template else '' }}">
+    <input type="hidden" id="suggestionId" value="{{ suggestion_id or '' }}">
+    <div class="form-group">
+      <label>Content Brief</label>
+      <textarea id="briefInput" placeholder="e.g. Why FDs are back, RBI just changed interest rates, Is your money safe in banks?">{{ prefill or '' }}</textarea>
+    </div>
+    <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+        <label>Platform{% if template %} (from template){% endif %}</label>
+        <select id="platformInput" {% if template %}disabled{% endif %}>
+          <option value="youtube_shorts" {% if template and template.platform == 'youtube_shorts' %}selected{% endif %}>YouTube Shorts</option>
+          <option value="instagram_reels" {% if template and template.platform == 'instagram_reels' %}selected{% endif %}>Instagram Reels</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+        <label>Duration{% if template %} (from template){% endif %}</label>
+        <select id="durationInput" {% if template %}disabled{% endif %}>
+          <option value="15s" {% if template and template.duration == '15s' %}selected{% endif %}>15 seconds (3 beats)</option>
+          <option value="30s" {% if (not template) or (template and template.duration == '30s') %}selected{% endif %}>30 seconds (4 beats)</option>
+          <option value="60s" {% if template and template.duration == '60s' %}selected{% endif %}>60 seconds (5 beats)</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+        <label>Language</label>
+        <select id="languageInput">
+          <option value="english">English</option>
+          <option value="hinglish">Hinglish (Hindi-English)</option>
+        </select>
+      </div>
+    </div>
+    {% if not template %}
+    <div class="form-group">
+      <label>Trending Keywords (optional, comma-separated)</label>
+      <input type="text" id="keywordsInput" placeholder="e.g. FD rates, RBI policy, bank interest">
+    </div>
+    {% endif %}
+    <button type="submit" class="btn btn-primary" id="generateBtn">
+      {% if template %}Generate 5 Variations from Template{% else %}Generate 5 Scripts{% endif %}
+    </button>
+  </form>
+</div>
+
+<div id="results"></div>
+
+<!-- Save as Template Modal -->
+<div id="tplModal" class="modal-overlay" onclick="if(event.target===this)closeTemplateModal()">
+  <div class="modal-box">
+    <h3>Save as Template</h3>
+    <p id="tplModalTitle" class="modal-subtitle"></p>
+    <form onsubmit="submitTemplate(event)">
+      <input type="hidden" id="tplScriptId" />
+      <div class="form-group">
+        <label for="tplName">Template Name</label>
+        <input type="text" id="tplName" placeholder="e.g. Fear + Curiosity 30s Shorts" required />
+      </div>
+      <div class="form-group">
+        <label for="tplDesc">Description (optional)</label>
+        <input type="text" id="tplDesc" placeholder="High-performing fear angle template" />
+      </div>
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeTemplateModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm" id="tplSubmitBtn">Save Template</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,23,0.85); z-index: 1500; align-items: center; justify-content: center; }
+  .modal-overlay.active { display: flex; }
+  .modal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; width: 100%; max-width: 480px; }
+  .modal-box h3 { font-size: 18px; margin-bottom: 4px; }
+  .modal-subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; }
+  .template-banner {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--accent-glow); border: 1px solid rgba(99,102,241,0.25);
+    border-radius: var(--radius); padding: 18px 22px; margin-bottom: 24px;
+  }
+  .template-banner strong { color: var(--accent); font-size: 14px; font-weight: 700; }
+  .template-banner p { color: var(--text-dim); font-size: 12px; margin-top: 3px; }
+
+  .beat-timeline { margin: 12px 0; }
+  .beat-card {
+    display: flex;
+    gap: 12px;
+    padding: 10px 14px;
+    border-left: 3px solid var(--border);
+    margin-bottom: 2px;
+    background: var(--bg-input);
+    border-radius: 0 6px 6px 0;
+  }
+  .beat-card.beat-hook { border-left-color: var(--red); }
+  .beat-card.beat-problem { border-left-color: var(--orange); }
+  .beat-card.beat-insight { border-left-color: var(--accent); }
+  .beat-card.beat-proof { border-left-color: var(--green); }
+  .beat-card.beat-cta { border-left-color: var(--pink); }
+  .beat-card.beat-twist { border-left-color: var(--yellow); }
+
+  .beat-meta {
+    min-width: 70px;
+    text-align: center;
+  }
+  .beat-type {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+  .beat-hook .beat-type { background: rgba(239,68,68,0.15); color: var(--red); }
+  .beat-problem .beat-type { background: rgba(249,115,22,0.15); color: var(--orange); }
+  .beat-insight .beat-type { background: rgba(99,102,241,0.15); color: var(--accent); }
+  .beat-proof .beat-type { background: rgba(34,197,94,0.15); color: var(--green); }
+  .beat-cta .beat-type { background: rgba(236,72,153,0.15); color: var(--pink); }
+  .beat-twist .beat-type { background: rgba(234,179,8,0.15); color: var(--yellow); }
+
+  .beat-timestamp {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: monospace;
+  }
+  .beat-content { flex: 1; }
+  .beat-voiceover {
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+  .beat-details {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .beat-detail-label {
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+  .hashtag-list {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .hashtag {
+    font-size: 11px;
+    background: rgba(99,102,241,0.1);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('generateForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const brief = document.getElementById('briefInput').value.trim();
+  if (!brief) return;
+
+  const platform = document.getElementById('platformInput').value;
+  const duration = document.getElementById('durationInput').value;
+  const language = document.getElementById('languageInput').value;
+  const templateId = document.getElementById('templateId').value || null;
+  const keywordsEl = document.getElementById('keywordsInput');
+  const keywords = keywordsEl ? keywordsEl.value.trim() : '';
+  const trendKeywords = keywords ? keywords.split(',').map(k => k.trim()).filter(Boolean) : null;
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  const platName = platform === 'instagram_reels' ? 'Instagram Reels' : 'YouTube Shorts';
+  const langLabel = language === 'hinglish' ? ' in Hinglish' : '';
+  const tplLabel = templateId ? ' from template' : '';
+  showLoading('Generating 5 scripts' + tplLabel + ' for ' + platName + ' (' + duration + ')' + langLabel + '...');
+
+  try {
+    const suggestionId = document.getElementById('suggestionId').value || null;
+    const payload = { brief, platform, duration, language, trend_keywords: trendKeywords };
+    if (templateId) payload.template_id = templateId;
+    if (suggestionId) payload.suggestion_id = suggestionId;
+
+    const res = await fetch('/scripts/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Generation failed');
+    }
+
+    const data = await res.json();
+    renderScripts(data, platform, duration);
+    showToast('Generated ' + data.scripts.length + ' scripts!', 'success');
+
+    // Mark trend suggestion as used if one was linked
+    if (suggestionId) {
+      fetch('/trends/suggestions/' + suggestionId + '?status=used', { method: 'PATCH' });
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+    btn.disabled = false;
+  }
+});
+
+function renderScripts(data, platform, duration) {
+  const container = document.getElementById('results');
+  const platLabel = platform === 'instagram_reels' ? 'Reels' : 'Shorts';
+
+  // Store scripts data for copy/export
+  window._generatedScripts = data.scripts;
+  window._briefId = data.brief_id;
+
+  let html = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="font-size: 16px;">Generated Scripts</h3>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <span class="badge" style="background: rgba(99,102,241,0.15); color: var(--accent);">${platLabel}</span>
+        <span class="badge" style="background: rgba(34,197,94,0.15); color: var(--green);">${duration}</span>
+        <a href="/ui/briefs/${data.brief_id}" class="btn btn-sm btn-primary">View Brief (Upload/Link)</a>
+      </div>
+    </div>
+  `;
+
+  data.scripts.forEach((s, idx) => {
+    html += `
+      <div class="script-card" style="margin-bottom: 16px;">
+        <div class="script-card-header">
+          <h3>${s.title}</h3>
+        </div>
+        <div class="script-card-body">
+          <div style="display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;">
+            <span class="badge badge-${s.angle}">${s.angle.replace('_', ' ')}</span>
+            <span class="badge badge-${s.hook_type}">${s.hook_type}</span>
+            <span class="badge badge-${s.predicted_performance || 'medium'}">${s.predicted_performance || 'medium'}</span>
+          </div>
+          <div class="beat-timeline">
+    `;
+
+    if (s.beats) {
+      s.beats.forEach((b) => {
+        html += `
+          <div class="beat-card beat-${b.type}">
+            <div class="beat-meta">
+              <div class="beat-type">${b.type}</div>
+              <div class="beat-timestamp">${b.timestamp}</div>
+            </div>
+            <div class="beat-content">
+              <div class="beat-voiceover">${b.voiceover}</div>
+              <div class="beat-details">
+                <div><span class="beat-detail-label">Screen:</span> ${b.on_screen_text || '-'}</div>
+                <div><span class="beat-detail-label">Visual:</span> ${b.visual_cue || '-'}</div>
+                <div><span class="beat-detail-label">Camera:</span> ${b.camera || '-'}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    html += '</div>';
+
+    // Hashtags
+    if (s.hashtags && s.hashtags.length) {
+      html += '<div class="hashtag-list">';
+      s.hashtags.forEach(h => {
+        html += `<span class="hashtag">${h}</span>`;
+      });
+      html += '</div>';
+    }
+
+    html += `
+          <div style="margin-top: 8px; font-size: 12px; color: var(--text-dim);">
+            Thumbnail: ${s.thumbnail_suggestion || 'N/A'}
+          </div>
+        </div>
+        <div class="script-card-footer" style="display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); flex-wrap: wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="copyScript(${idx})">Copy Script</button>
+          <button class="btn btn-secondary btn-sm" onclick="copyJSON(${idx})">Copy JSON</button>
+          <button class="btn btn-secondary btn-sm" onclick="copyHashtags(${idx})">Copy Hashtags</button>
+          <a href="/ui/teleprompter/${s.id}" class="btn btn-secondary btn-sm" target="_blank">Teleprompter</a>
+          <button class="btn btn-secondary btn-sm" onclick="regenerateScript('${s.id}', this)">Regenerate</button>
+          <button class="btn btn-secondary btn-sm" onclick="openTemplateModal('${s.id}', '${s.title.replace(/'/g, "\\'")}')">Save as Template</button>
+          <a href="/ui/lineage/script/${s.id}" class="btn btn-secondary btn-sm">Lineage</a>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function copyScript(idx) {
+  const s = window._generatedScripts[idx];
+  if (!s || !s.beats) return;
+  const text = s.beats.map(b => `[${b.type.toUpperCase()} ${b.timestamp}]\n${b.voiceover}`).join('\n\n');
+  navigator.clipboard.writeText(text).then(() => showToast('Script copied!', 'success'));
+}
+
+function copyJSON(idx) {
+  const s = window._generatedScripts[idx];
+  if (!s) return;
+  navigator.clipboard.writeText(JSON.stringify(s, null, 2)).then(() => showToast('JSON copied!', 'success'));
+}
+
+function copyHashtags(idx) {
+  const s = window._generatedScripts[idx];
+  if (!s || !s.hashtags) return;
+  navigator.clipboard.writeText(s.hashtags.join(' ')).then(() => showToast('Hashtags copied!', 'success'));
+}
+
+async function regenerateScript(scriptId, btn) {
+  if (!confirm('Regenerate this script? The current version will be saved as a snapshot.')) return;
+  btn.disabled = true; btn.textContent = 'Regenerating...';
+  try {
+    const res = await fetch('/scripts/regenerate/' + scriptId, { method: 'POST' });
+    if (!res.ok) throw new Error('Regeneration failed');
+    showToast('Script regenerated! Redirecting to brief...', 'success');
+    setTimeout(() => { window.location.href = '/ui/briefs/' + window._briefId; }, 800);
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Regenerate';
+  }
+}
+
+function openTemplateModal(scriptId, title) {
+  document.getElementById('tplScriptId').value = scriptId;
+  document.getElementById('tplModalTitle').textContent = title;
+  document.getElementById('tplName').value = '';
+  document.getElementById('tplDesc').value = '';
+  document.getElementById('tplModal').classList.add('active');
+}
+function closeTemplateModal() { document.getElementById('tplModal').classList.remove('active'); }
+
+async function submitTemplate(e) {
+  e.preventDefault();
+  const btn = document.getElementById('tplSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    const res = await fetch('/scripts/templates', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        script_id: document.getElementById('tplScriptId').value,
+        name: document.getElementById('tplName').value,
+        description: document.getElementById('tplDesc').value,
+      }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    closeTemplateModal();
+    showToast('Template saved! View it in Templates page.', 'success');
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Save Template'; }
+}
+</script>
+{% endblock %}

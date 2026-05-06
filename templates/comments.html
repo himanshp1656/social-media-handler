@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% block title %}Comments - ScriptLab{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+      <h2>Comment Replies</h2>
+      <p>Manage YouTube comments with AI-generated replies</p>
+    </div>
+  </div>
+</div>
+
+<!-- Video Selector -->
+<div class="card" style="margin-bottom: 24px;">
+  <div style="display: flex; gap: 12px; align-items: flex-end;">
+    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+      <label>Select Video</label>
+      <select id="uploadSelect" onchange="loadComments()">
+        <option value="">Choose a linked video...</option>
+        {% for u in uploads %}
+        <option value="{{ u.id }}" {% if selected_upload == u.id %}selected{% endif %}>
+          {{ u.title }} ({{ u.youtube_video_id }})
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="btn btn-secondary" onclick="fetchComments()" id="fetchBtn" disabled>Fetch Comments</button>
+    <button class="btn btn-primary" onclick="generateReplies()" id="generateBtn" disabled>Generate Replies</button>
+    <button class="btn btn-secondary" onclick="postAllApproved()" id="postAllBtn" disabled>Post All Approved</button>
+  </div>
+</div>
+
+<!-- Comments List -->
+<div id="commentsContainer">
+  {% if selected_upload %}
+  <div id="commentsList">
+    {% if comments %}
+    {% for c in comments %}
+    <div class="comment-card" data-id="{{ c.id }}" data-status="{{ c.status }}">
+      <div class="comment-header">
+        <div class="comment-author">@{{ c.author }}</div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <span class="badge badge-{{ c.status }}">{{ c.status }}</span>
+          <span class="comment-date">{{ c.created_at[:10] }}</span>
+        </div>
+      </div>
+      <div class="comment-text">{{ c.comment_text }}</div>
+      {% if c.suggested_reply %}
+      <div class="reply-section">
+        <div class="reply-label">AI Reply</div>
+        <textarea class="reply-input" id="reply-{{ c.id }}" rows="2">{{ c.suggested_reply }}</textarea>
+        <div class="reply-actions">
+          {% if c.status == 'pending' or c.status == 'approved' %}
+          <button class="btn btn-sm btn-primary" onclick="approveReply('{{ c.id }}')">Approve</button>
+          <button class="btn btn-sm btn-secondary" onclick="skipReply('{{ c.id }}')">Skip</button>
+          {% endif %}
+          {% if c.status == 'approved' %}
+          <button class="btn btn-sm" style="background:var(--green-dim);color:var(--green);" onclick="postReply('{{ c.id }}')">Post to YouTube</button>
+          {% endif %}
+          {% if c.status == 'posted' %}
+          <span style="color: var(--green); font-size: 12px; font-weight: 600;">Posted</span>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div class="reply-section" style="opacity: 0.5;">
+        <div class="reply-label">No reply generated yet</div>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="card">
+      <div class="empty-state">
+        <h3>No comments yet</h3>
+        <p>Click "Fetch Comments" to pull YouTube comments for this video.</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="card">
+    <div class="empty-state">
+      <h3>Select a video</h3>
+      <p>Choose a linked YouTube video above to manage its comments.</p>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+  .comment-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    transition: all var(--transition);
+  }
+  .comment-card:hover { border-color: var(--border-hover); }
+  .comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .comment-author {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--accent);
+  }
+  .comment-date {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .comment-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 14px;
+    padding: 12px 16px;
+    background: var(--bg-surface);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--border-hover);
+  }
+  .reply-section {
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .reply-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .reply-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 50px;
+    transition: border-color var(--transition);
+  }
+  .reply-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .reply-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    align-items: center;
+  }
+  .badge-pending { background: var(--yellow-dim); color: var(--yellow); }
+  .badge-approved { background: var(--green-dim); color: var(--green); }
+  .badge-posted { background: var(--cyan-dim); color: var(--cyan); }
+  .badge-skipped { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const uploadSelect = document.getElementById('uploadSelect');
+const fetchBtn = document.getElementById('fetchBtn');
+const generateBtn = document.getElementById('generateBtn');
+const postAllBtn = document.getElementById('postAllBtn');
+
+function updateButtons() {
+  const hasVideo = uploadSelect.value !== '';
+  fetchBtn.disabled = !hasVideo;
+  generateBtn.disabled = !hasVideo;
+  postAllBtn.disabled = !hasVideo;
+}
+updateButtons();
+
+function loadComments() {
+  updateButtons();
+  const uploadId = uploadSelect.value;
+  if (uploadId) {
+    window.location.href = '/ui/comments?upload_id=' + uploadId;
+  }
+}
+
+async function fetchComments() {
+  const uploadId = uploadSelect.value;
+  if (!uploadId) return;
+  showLoading('Fetching YouTube comments...');
+  try {
+    const res = await fetch('/comments/fetch/' + uploadId, { method: 'POST' });
+    const data = await res.json();
+    if (data.error) {
+      showToast(data.error, 'error');
+    } else {
+      showToast('Fetched ' + data.fetched + ' new comments (total: ' + data.total + ')', 'success');
+      setTimeout(() => location.reload(), 1000);
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function generateReplies() {
+  const uploadId = uploadSelect.value;
+  if (!uploadId) return;
+  showLoading('Generating AI replies...');
+  try {
+    const res = await fetch('/comments/generate-replies/' + uploadId, { method: 'POST' });
+    const data = await res.json();
+    if (data.error) {
+      showToast(data.error, 'error');
+    } else {
+      showToast('Generated ' + data.generated + ' replies', 'success');
+      setTimeout(() => location.reload(), 1000);
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function approveReply(commentId) {
+  const replyText = document.getElementById('reply-' + commentId).value;
+  try {
+    const res = await fetch('/comments/' + commentId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reply_text: replyText, status: 'approved' }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      showToast(data.error, 'error');
+    } else {
+      showToast('Reply approved', 'success');
+      setTimeout(() => location.reload(), 500);
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
+async function skipReply(commentId) {
+  try {
+    const res = await fetch('/comments/' + commentId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'skipped' }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      showToast(data.error, 'error');
+    } else {
+      showToast('Comment skipped', 'success');
+      setTimeout(() => location.reload(), 500);
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
+async function postReply(commentId) {
+  showLoading('Posting reply to YouTube...');
+  try {
+    const res = await fetch('/comments/post/' + commentId, { method: 'POST' });
+    const data = await res.json();
+    if (data.error) {
+      showToast(data.error, 'error');
+    } else {
+      showToast('Reply posted to YouTube!', 'success');
+      setTimeout(() => location.reload(), 500);
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function postAllApproved() {
+  const uploadId = uploadSelect.value;
+  if (!uploadId) return;
+  showLoading('Posting all approved replies...');
+  try {
+    const res = await fetch('/comments/post-all/' + uploadId, { method: 'POST' });
+    const data = await res.json();
+    if (data.error) {
+      showToast(data.error, 'error');
+    } else {
+      showToast('Posted ' + data.posted + ' replies to YouTube', 'success');
+      setTimeout(() => location.reload(), 1000);
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+</script>
+{% endblock %}

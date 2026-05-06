@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - ScriptLab{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Dashboard</h2>
+  <p>Your content pipeline at a glance</p>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="label">Briefs</div>
+    <div class="value" style="color: var(--accent);">{{ stats.briefs }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Scripts</div>
+    <div class="value" style="color: var(--green);">{{ stats.scripts }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Uploaded</div>
+    <div class="value" style="color: var(--cyan);">{{ stats.uploads }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Suggestions</div>
+    <div class="value" style="color: var(--orange);">{{ stats.suggestions }}</div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+      <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-dim);">Recent Briefs</h3>
+      <a href="/ui/generate" class="btn btn-sm btn-primary">+ New</a>
+    </div>
+    {% if briefs %}
+      {% for b in briefs %}
+      <a href="/ui/briefs/{{ b.id }}" style="text-decoration: none; color: inherit;">
+        <div class="brief-item">
+          <div>
+            <div class="topic">{{ b.raw_brief[:60] }}{% if b.raw_brief|length > 60 %}...{% endif %}</div>
+            <div class="meta">{{ b.created_at[:10] if b.created_at else '' }}</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </a>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state" style="padding: 32px;">
+        <h3>No briefs yet</h3>
+        <p>Generate your first scripts</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+      <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-dim);">Suggestions</h3>
+      <a href="/ui/trends" class="btn btn-sm btn-secondary">View All</a>
+    </div>
+    {% if suggestions %}
+      {% for s in suggestions %}
+      <div class="brief-item">
+        <div>
+          <div class="topic">{{ s.suggested_brief[:55] }}{% if s.suggested_brief|length > 55 %}...{% endif %}</div>
+          <div class="meta">
+            <span class="badge badge-{{ s.source }}">{{ s.source.replace('_', ' ') }}</span>
+            {{ s.trend_score }}
+          </div>
+        </div>
+        <a href="/ui/generate?brief={{ s.suggested_brief | urlencode }}&suggestion_id={{ s.id }}" class="btn btn-sm btn-primary">Use</a>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state" style="padding: 32px;">
+        <h3>No suggestions yet</h3>
+        <p>Fetch trends to get content ideas</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

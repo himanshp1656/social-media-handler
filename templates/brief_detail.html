@@ -1,0 +1,532 @@
+{% extends "base.html" %}
+{% block title %}Brief: {{ brief.topic }} - Content Engine{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>{{ brief.raw_brief }}</h2>
+  <p>Brief ID: {{ brief.id }} &middot; Created: {{ brief.created_at[:10] if brief.created_at else '' }}</p>
+  <div style="display: flex; gap: 8px; margin-top: 8px;">
+    <a href="/scripts/briefs/{{ brief.id }}/export" class="btn btn-sm btn-secondary">Export All Scripts</a>
+    <a href="/ui/lineage/brief/{{ brief.id }}" class="btn btn-sm btn-secondary">View Lineage</a>
+  </div>
+</div>
+
+{% if not youtube_authenticated %}
+<div class="youtube-auth-banner">
+  <div>
+    <strong>YouTube not connected</strong>
+    <p>Authenticate with YouTube to upload videos and fetch analytics.</p>
+  </div>
+  <a href="/youtube/auth" class="btn btn-primary btn-sm">Connect YouTube</a>
+</div>
+{% endif %}
+
+{% if scripts %}
+{% for s in scripts %}
+{% set uploads = upload_map.get(s.id, []) %}
+{% set beats = beats_map.get(s.id, []) %}
+<div class="script-card" style="margin-bottom: 20px;">
+  <div class="script-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <h3 class="editable-title" data-script-id="{{ s.id }}" onclick="editTitle(this)" title="Click to edit">{{ s.title }}</h3>
+  </div>
+  <div class="script-card-body">
+    <div style="display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;">
+      <span class="badge badge-{{ s.angle }}">{{ s.angle.replace('_', ' ') }}</span>
+      <span class="badge badge-{{ s.hook_type }}">{{ s.hook_type }}</span>
+      <span class="badge badge-platform">{{ 'Reels' if s.platform == 'instagram_reels' else 'Shorts' }}</span>
+      <span class="badge badge-duration">{{ s.duration }}</span>
+      {% if s.predicted_performance %}
+      <span class="badge badge-{{ s.predicted_performance }}">{{ s.predicted_performance }}</span>
+      {% endif %}
+      {% if s.score and s.score > 0 %}
+      <span class="badge" style="background: rgba(99,102,241,0.15); color: var(--accent);">Score: {% if s.score >= 1000000 %}{{ "%.1fM"|format(s.score / 1000000) }}{% elif s.score >= 1000 %}{{ "%.1fK"|format(s.score / 1000) }}{% else %}{{ s.score }}{% endif %}</span>
+      {% endif %}
+      {% for upload in uploads %}
+      <span class="badge badge-upload-{{ upload.upload_status }}">{{ upload.upload_status }}</span>
+      {% endfor %}
+    </div>
+
+    {% for upload in uploads %}
+    {% if upload.youtube_video_id %}
+    <div class="youtube-link-block">
+      <a href="https://youtube.com/watch?v={{ upload.youtube_video_id }}" target="_blank" rel="noopener noreferrer">
+        youtube.com/watch?v={{ upload.youtube_video_id }}
+      </a>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <!-- Beat Timeline -->
+    {% if beats %}
+    <div class="beat-timeline" id="beats-{{ s.id }}">
+      {% for b in beats %}
+      <div class="beat-card beat-{{ b.type }}" onclick="toggleBeatDetails(this)">
+        <div class="beat-meta">
+          <div class="beat-type">{{ b.type }}</div>
+          <div class="beat-timestamp">{{ b.timestamp }}</div>
+          <div class="beat-dur">{{ b.duration_seconds }}s</div>
+        </div>
+        <div class="beat-content">
+          <div class="beat-voiceover">{{ b.voiceover }}</div>
+          <div class="beat-details-collapsible">
+            {% if b.on_screen_text %}
+            <div class="beat-detail"><span class="beat-detail-label">Screen:</span> {{ b.on_screen_text }}</div>
+            {% endif %}
+            {% if b.visual_cue %}
+            <div class="beat-detail"><span class="beat-detail-label">Visual:</span> {{ b.visual_cue }}</div>
+            {% endif %}
+            {% if b.camera %}
+            <div class="beat-detail"><span class="beat-detail-label">Camera:</span> {{ b.camera }}</div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="beat-actions">
+          <button class="beat-action-btn" onclick="event.stopPropagation(); editBeat('{{ s.id }}', {{ loop.index0 }})" title="Edit beat">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="beat-action-btn" onclick="event.stopPropagation(); copyBeat('{{ s.id }}', {{ loop.index0 }})" title="Copy beat">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="hook-text">"{{ s.hook }}"</div>
+    <div class="script-body-text">{{ s.body.replace('\n', '<br>')|safe }}</div>
+    {% endif %}
+
+    <div class="cta-block">
+      <strong>CTA ({{ s.cta_goal }}):</strong> {{ s.cta }}
+    </div>
+
+    {% if s.hashtags %}
+    <div class="hashtag-list">
+      {% for tag in s.hashtags %}
+      <span class="hashtag">{{ tag }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if s.thumbnail_suggestion %}
+    <div class="thumbnail-block">Thumbnail: {{ s.thumbnail_suggestion }}</div>
+    {% endif %}
+  </div>
+  <div class="script-card-footer">
+    <button class="btn btn-secondary btn-sm" onclick="copyScript('{{ s.id }}')">Copy Script</button>
+    <button class="btn btn-secondary btn-sm" onclick="copyJSON('{{ s.id }}')">Copy JSON</button>
+    <a href="/ui/teleprompter/{{ s.id }}" class="btn btn-secondary btn-sm" target="_blank">Teleprompter</a>
+    <button class="btn btn-secondary btn-sm" onclick="regenerateScript('{{ s.id }}')" id="regen-{{ s.id }}">Regenerate</button>
+    <button class="btn btn-secondary btn-sm" onclick="openTemplateModal('{{ s.id }}', '{{ s.title }}')">Save as Template</button>
+    <button class="btn btn-secondary btn-sm" onclick="openLinkModal('{{ s.id }}', '{{ s.title }}')">Link Video</button>
+    <button class="btn btn-primary btn-sm" onclick="openUploadModal('{{ s.id }}', '{{ s.title }}')">Upload Video</button>
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <h3>No scripts found for this brief</h3>
+  </div>
+</div>
+{% endif %}
+
+<!-- Link YouTube Video Modal -->
+<div id="linkModal" class="modal-overlay" onclick="if(event.target===this)closeLinkModal()">
+  <div class="modal-box">
+    <h3>Link YouTube Video</h3>
+    <p id="linkModalScript" class="modal-subtitle"></p>
+    <form id="linkForm" onsubmit="submitLink(event)">
+      <input type="hidden" id="linkScriptId" />
+      <div class="form-group">
+        <label for="youtubeUrl">YouTube Video URL or ID</label>
+        <input type="text" id="youtubeUrl" placeholder="https://youtube.com/watch?v=... or video ID" required />
+      </div>
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeLinkModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm" id="linkSubmitBtn">Link Video</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Save as Template Modal -->
+<div id="templateModal" class="modal-overlay" onclick="if(event.target===this)closeTemplateModal()">
+  <div class="modal-box">
+    <h3>Save as Template</h3>
+    <p id="templateModalScript" class="modal-subtitle"></p>
+    <form id="templateForm" onsubmit="submitTemplate(event)">
+      <input type="hidden" id="templateScriptId" />
+      <div class="form-group">
+        <label for="templateName">Template Name</label>
+        <input type="text" id="templateName" placeholder="e.g. Fear + Curiosity 30s Shorts" required />
+      </div>
+      <div class="form-group">
+        <label for="templateDesc">Description (optional)</label>
+        <input type="text" id="templateDesc" placeholder="High-performing fear angle template for FD content" />
+      </div>
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeTemplateModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm" id="templateSubmitBtn">Save Template</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Upload Video Modal -->
+<div id="uploadModal" class="modal-overlay" onclick="if(event.target===this)closeUploadModal()">
+  <div class="modal-box">
+    <h3>Upload Video to YouTube</h3>
+    <p id="uploadModalScript" class="modal-subtitle"></p>
+    <form id="uploadForm" onsubmit="submitUpload(event)">
+      <input type="hidden" id="uploadScriptId" />
+      <div class="form-group">
+        <label for="videoFile">Video File</label>
+        <input type="file" id="videoFile" accept=".mp4,.mov,.avi,.mkv,.webm,.flv,.wmv" required />
+      </div>
+      <div class="form-group">
+        <label for="privacyStatus">Privacy</label>
+        <select id="privacyStatus">
+          <option value="private">Private</option>
+          <option value="unlisted">Unlisted</option>
+          <option value="public">Public</option>
+        </select>
+      </div>
+      <div id="uploadProgress" style="display:none; margin-bottom: 12px;">
+        <div class="upload-progress-bar"><div class="upload-progress-fill" id="uploadFill"></div></div>
+        <p style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">Uploading...</p>
+      </div>
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeUploadModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm" id="uploadSubmitBtn">Upload</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Beat Modal -->
+<div id="editBeatModal" class="modal-overlay" onclick="if(event.target===this)closeEditBeatModal()">
+  <div class="modal-box" style="max-width: 560px;">
+    <h3>Edit Beat</h3>
+    <p id="editBeatTitle" class="modal-subtitle"></p>
+    <form onsubmit="submitEditBeat(event)">
+      <input type="hidden" id="editBeatId" />
+      <div class="form-group">
+        <label>Voiceover</label>
+        <textarea id="editVoiceover" rows="3" style="font-size:13px;"></textarea>
+      </div>
+      <div class="form-group">
+        <label>On-Screen Text</label>
+        <input type="text" id="editOnScreen" />
+      </div>
+      <div class="form-group">
+        <label>Visual Cue</label>
+        <input type="text" id="editVisualCue" />
+      </div>
+      <div class="form-group">
+        <label>Camera</label>
+        <input type="text" id="editCamera" />
+      </div>
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeEditBeatModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm" id="editBeatSubmitBtn">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .youtube-auth-banner {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);
+    border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px;
+  }
+  .youtube-auth-banner strong { color: var(--red); font-size: 14px; }
+  .youtube-auth-banner p { color: var(--text-dim); font-size: 13px; margin-top: 2px; }
+
+  .badge-platform { background: rgba(6,182,212,0.15); color: var(--cyan); }
+  .badge-duration { background: rgba(234,179,8,0.15); color: var(--yellow); }
+
+  /* Beat timeline */
+  .beat-timeline { margin: 12px 0; }
+  .beat-card {
+    display: flex; gap: 12px; padding: 10px 14px;
+    border-left: 3px solid var(--border); margin-bottom: 2px;
+    background: var(--bg-input); border-radius: 0 6px 6px 0;
+  }
+  .beat-card.beat-hook { border-left-color: var(--red); }
+  .beat-card.beat-problem { border-left-color: var(--orange); }
+  .beat-card.beat-insight { border-left-color: var(--accent); }
+  .beat-card.beat-proof { border-left-color: var(--green); }
+  .beat-card.beat-cta { border-left-color: var(--pink); }
+  .beat-card.beat-twist { border-left-color: var(--yellow); }
+
+  .beat-meta { min-width: 70px; text-align: center; }
+  .beat-type {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 2px 8px; border-radius: 10px;
+    display: inline-block; margin-bottom: 2px;
+  }
+  .beat-hook .beat-type { background: rgba(239,68,68,0.15); color: var(--red); }
+  .beat-problem .beat-type { background: rgba(249,115,22,0.15); color: var(--orange); }
+  .beat-insight .beat-type { background: rgba(99,102,241,0.15); color: var(--accent); }
+  .beat-proof .beat-type { background: rgba(34,197,94,0.15); color: var(--green); }
+  .beat-cta .beat-type { background: rgba(236,72,153,0.15); color: var(--pink); }
+  .beat-twist .beat-type { background: rgba(234,179,8,0.15); color: var(--yellow); }
+
+  .beat-timestamp { font-size: 11px; color: var(--text-dim); font-family: monospace; }
+  .beat-dur { font-size: 10px; color: var(--text-dim); }
+  .beat-card { cursor: pointer; position: relative; transition: background 0.15s; }
+  .beat-card:hover { background: var(--bg-card-hover); }
+  .beat-content { flex: 1; }
+  .beat-voiceover { font-size: 13px; line-height: 1.5; margin-bottom: 4px; }
+  .beat-details-collapsible {
+    display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--text-dim);
+    max-height: 0; overflow: hidden; transition: max-height 0.2s ease;
+  }
+  .beat-card.expanded .beat-details-collapsible { max-height: 200px; margin-top: 4px; }
+  .beat-detail-label { font-weight: 600; }
+  .beat-actions {
+    position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s;
+  }
+  .beat-card:hover .beat-actions { opacity: 1; }
+  .beat-action-btn {
+    background: none; border: none; color: var(--text-dim); cursor: pointer;
+    padding: 4px; border-radius: 4px;
+  }
+  .beat-action-btn:hover { color: var(--accent); background: rgba(99,102,241,0.1); }
+  .editable-title { cursor: pointer; }
+  .editable-title:hover { color: var(--accent); }
+
+  .hashtag-list { display: flex; gap: 4px; flex-wrap: wrap; margin: 8px 0; }
+  .hashtag { font-size: 11px; background: rgba(99,102,241,0.1); color: var(--accent); padding: 2px 8px; border-radius: 10px; }
+
+  /* Modals */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,23,0.85); z-index: 1500; align-items: center; justify-content: center; }
+  .modal-overlay.active { display: flex; }
+  .modal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; width: 100%; max-width: 480px; }
+  .modal-box h3 { font-size: 18px; margin-bottom: 4px; }
+  .modal-subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; }
+  .youtube-link-block { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: 13px; }
+  .youtube-link-block a { color: var(--red); }
+  .badge-upload-linked { background: rgba(6,182,212,0.15); color: var(--cyan); }
+  .badge-upload-uploaded { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-upload-pending { background: rgba(234,179,8,0.15); color: var(--yellow); }
+  .badge-upload-failed { background: rgba(239,68,68,0.15); color: var(--red); }
+  .upload-progress-bar { width: 100%; height: 6px; background: var(--bg-input); border-radius: 3px; overflow: hidden; }
+  .upload-progress-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+</style>
+
+<script>
+// Store beats data for copy functionality
+const beatsData = {{ beats_map | tojson }};
+
+function toggleBeatDetails(el) {
+  el.classList.toggle('expanded');
+}
+
+function copyScript(scriptId) {
+  const beats = beatsData[scriptId];
+  if (!beats || !beats.length) { showToast('No beats data', 'error'); return; }
+  const text = beats.map(b => `[${b.type.toUpperCase()} ${b.timestamp}]\n${b.voiceover}`).join('\n\n');
+  navigator.clipboard.writeText(text).then(() => showToast('Script copied!', 'success'));
+}
+
+function copyBeat(scriptId, beatIndex) {
+  const beats = beatsData[scriptId];
+  if (!beats || !beats[beatIndex]) return;
+  const b = beats[beatIndex];
+  const text = `[${b.type.toUpperCase()} ${b.timestamp}]\nVoiceover: ${b.voiceover}\nScreen: ${b.on_screen_text || '-'}\nVisual: ${b.visual_cue || '-'}\nCamera: ${b.camera || '-'}`;
+  navigator.clipboard.writeText(text).then(() => showToast('Beat copied!', 'success'));
+}
+
+function copyJSON(scriptId) {
+  const beats = beatsData[scriptId];
+  if (!beats) { showToast('No data to copy', 'error'); return; }
+  navigator.clipboard.writeText(JSON.stringify(beats, null, 2)).then(() => showToast('JSON copied!', 'success'));
+}
+
+function openTemplateModal(scriptId, title) {
+  document.getElementById('templateScriptId').value = scriptId;
+  document.getElementById('templateModalScript').textContent = title;
+  document.getElementById('templateName').value = '';
+  document.getElementById('templateDesc').value = '';
+  document.getElementById('templateModal').classList.add('active');
+}
+function closeTemplateModal() { document.getElementById('templateModal').classList.remove('active'); }
+
+async function submitTemplate(e) {
+  e.preventDefault();
+  const btn = document.getElementById('templateSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    const res = await fetch('/scripts/templates', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        script_id: document.getElementById('templateScriptId').value,
+        name: document.getElementById('templateName').value,
+        description: document.getElementById('templateDesc').value,
+      }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    closeTemplateModal();
+    showToast('Template saved! View it in Templates page.', 'success');
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Save Template'; }
+}
+
+function openLinkModal(scriptId, title) {
+  document.getElementById('linkScriptId').value = scriptId;
+  document.getElementById('linkModalScript').textContent = title;
+  document.getElementById('youtubeUrl').value = '';
+  document.getElementById('linkModal').classList.add('active');
+}
+function closeLinkModal() { document.getElementById('linkModal').classList.remove('active'); }
+
+function openUploadModal(scriptId, title) {
+  document.getElementById('uploadScriptId').value = scriptId;
+  document.getElementById('uploadModalScript').textContent = title;
+  document.getElementById('videoFile').value = '';
+  document.getElementById('uploadProgress').style.display = 'none';
+  document.getElementById('uploadModal').classList.add('active');
+}
+function closeUploadModal() { document.getElementById('uploadModal').classList.remove('active'); }
+
+async function submitLink(e) {
+  e.preventDefault();
+  const btn = document.getElementById('linkSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Linking...';
+  try {
+    const res = await fetch('/youtube/link', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ script_id: document.getElementById('linkScriptId').value, youtube_video_id: document.getElementById('youtubeUrl').value }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Link failed');
+    closeLinkModal(); showToast('Video linked!', 'success');
+    setTimeout(() => location.reload(), 800);
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Link Video'; }
+}
+
+async function submitUpload(e) {
+  e.preventDefault();
+  const btn = document.getElementById('uploadSubmitBtn');
+  const fileInput = document.getElementById('videoFile');
+  if (!fileInput.files.length) return;
+  btn.disabled = true; btn.textContent = 'Uploading...';
+  document.getElementById('uploadProgress').style.display = 'block';
+  const formData = new FormData();
+  formData.append('script_id', document.getElementById('uploadScriptId').value);
+  formData.append('privacy_status', document.getElementById('privacyStatus').value);
+  formData.append('video', fileInput.files[0]);
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/youtube/upload-file');
+    xhr.upload.onprogress = function(e) {
+      if (e.lengthComputable) document.getElementById('uploadFill').style.width = Math.round((e.loaded/e.total)*100) + '%';
+    };
+    await new Promise((resolve, reject) => {
+      xhr.onload = () => { if (xhr.status >= 200 && xhr.status < 300) resolve(); else { try { reject(new Error(JSON.parse(xhr.responseText).detail)); } catch { reject(new Error('Upload failed')); } } };
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.send(formData);
+    });
+    closeUploadModal(); showToast('Video uploaded!', 'success');
+    setTimeout(() => location.reload(), 800);
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Upload'; }
+}
+
+async function regenerateScript(scriptId) {
+  const btn = document.getElementById('regen-' + scriptId);
+  if (!confirm('Regenerate this script? The current version will be replaced.')) return;
+  btn.disabled = true; btn.textContent = 'Regenerating...';
+  try {
+    const res = await fetch('/scripts/regenerate/' + scriptId, { method: 'POST' });
+    if (!res.ok) throw new Error('Regeneration failed');
+    showToast('Script regenerated!', 'success');
+    setTimeout(() => location.reload(), 600);
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Regenerate'; }
+}
+
+function editTitle(el) {
+  const scriptId = el.dataset.scriptId;
+  const current = el.textContent.trim();
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = current;
+  input.className = 'inline-edit-input';
+  input.style.cssText = 'font-size:16px;font-weight:700;width:100%;background:var(--bg-input);border:1px solid var(--accent);border-radius:4px;padding:4px 8px;color:var(--text);';
+  el.replaceWith(input);
+  input.focus();
+  input.select();
+
+  async function save() {
+    const val = input.value.trim();
+    if (!val || val === current) { input.replaceWith(el); return; }
+    try {
+      const res = await fetch('/scripts/' + scriptId, {
+        method: 'PATCH', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({title: val}),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      el.textContent = val;
+      input.replaceWith(el);
+      showToast('Title updated', 'success');
+    } catch (err) { showToast(err.message, 'error'); input.replaceWith(el); }
+  }
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } if (e.key === 'Escape') { input.replaceWith(el); } });
+}
+
+function editBeat(scriptId, beatIndex) {
+  const beat = beatsData[scriptId]?.[beatIndex];
+  if (!beat) return;
+
+  document.getElementById('editBeatId').value = beat.id;
+  document.getElementById('editVoiceover').value = beat.voiceover || '';
+  document.getElementById('editOnScreen').value = beat.on_screen_text || '';
+  document.getElementById('editVisualCue').value = beat.visual_cue || '';
+  document.getElementById('editCamera').value = beat.camera || '';
+  document.getElementById('editBeatTitle').textContent = beat.type.toUpperCase() + ' — ' + beat.timestamp;
+  document.getElementById('editBeatModal').classList.add('active');
+}
+
+function closeEditBeatModal() { document.getElementById('editBeatModal').classList.remove('active'); }
+
+async function submitEditBeat(e) {
+  e.preventDefault();
+  const beatId = document.getElementById('editBeatId').value;
+  const btn = document.getElementById('editBeatSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    const res = await fetch('/scripts/beats/' + beatId, {
+      method: 'PATCH', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        voiceover: document.getElementById('editVoiceover').value,
+        on_screen_text: document.getElementById('editOnScreen').value,
+        visual_cue: document.getElementById('editVisualCue').value,
+        camera: document.getElementById('editCamera').value,
+      }),
+    });
+    if (!res.ok) throw new Error('Save failed');
+    closeEditBeatModal();
+    showToast('Beat updated!', 'success');
+    setTimeout(() => location.reload(), 600);
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Save Changes'; }
+}
+
+function showToast(msg, type) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+</script>
+{% endblock %}

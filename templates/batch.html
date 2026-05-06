@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Batch Generate - Content Engine{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Batch Generate</h2>
+  <p>Enter multiple briefs (one per line) and generate scripts for all at once</p>
+</div>
+
+<div class="card" style="max-width: 700px; margin-bottom: 32px;">
+  <form id="batchForm">
+    <div class="form-group">
+      <label>Content Briefs (one per line)</label>
+      <textarea id="briefsInput" rows="6" placeholder="Why FDs are back&#10;RBI just cut interest rates&#10;Is your money safe in banks?&#10;Best SBI FD rates this month"></textarea>
+    </div>
+    <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+        <label>Platform</label>
+        <select id="platformInput">
+          <option value="youtube_shorts">YouTube Shorts</option>
+          <option value="instagram_reels">Instagram Reels</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+        <label>Duration</label>
+        <select id="durationInput">
+          <option value="15s">15 seconds</option>
+          <option value="30s" selected>30 seconds</option>
+          <option value="60s">60 seconds</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+        <label>Language</label>
+        <select id="languageInput">
+          <option value="english">English</option>
+          <option value="hinglish">Hinglish</option>
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary" id="batchBtn">
+      Generate All
+    </button>
+  </form>
+</div>
+
+<div id="batchProgress" style="display: none; margin-bottom: 20px;">
+  <div class="card">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
+      <span id="progressText" style="font-size: 14px; color: var(--text-dim);">Processing...</span>
+    </div>
+    <div style="margin-top: 12px; background: var(--bg-input); border-radius: 6px; height: 6px; overflow: hidden;">
+      <div id="progressBar" style="height: 100%; background: var(--accent); width: 0%; transition: width 0.3s;"></div>
+    </div>
+  </div>
+</div>
+
+<div id="results"></div>
+
+<style>
+  .batch-result {
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .batch-result-header {
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+  .batch-result-header:hover { background: var(--bg-input); }
+  .batch-result-header h4 { font-size: 14px; font-weight: 600; margin: 0; }
+  .batch-result-body { padding: 16px; display: none; }
+  .batch-result-body.open { display: block; }
+  .batch-script {
+    padding: 10px 14px;
+    background: var(--bg-input);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .batch-script-title { font-size: 13px; font-weight: 500; }
+  .batch-script-meta { display: flex; gap: 6px; }
+  .batch-error {
+    padding: 10px 14px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--red);
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('batchForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const text = document.getElementById('briefsInput').value.trim();
+  if (!text) return;
+
+  const briefs = text.split('\n').map(b => b.trim()).filter(Boolean);
+  if (briefs.length === 0) return;
+
+  const platform = document.getElementById('platformInput').value;
+  const duration = document.getElementById('durationInput').value;
+  const language = document.getElementById('languageInput').value;
+  const btn = document.getElementById('batchBtn');
+  btn.disabled = true;
+
+  const progress = document.getElementById('batchProgress');
+  progress.style.display = 'block';
+  document.getElementById('progressText').textContent = `Generating scripts for ${briefs.length} briefs...`;
+  document.getElementById('progressBar').style.width = '10%';
+  document.getElementById('results').innerHTML = '';
+
+  try {
+    const res = await fetch('/scripts/generate/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ briefs, platform, duration, language }),
+    });
+
+    document.getElementById('progressBar').style.width = '100%';
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Batch generation failed');
+    }
+
+    const data = await res.json();
+    renderBatchResults(data);
+    showToast(`Generated scripts for ${data.total} briefs!`, 'success');
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => { progress.style.display = 'none'; }, 1000);
+  }
+});
+
+function renderBatchResults(data) {
+  const container = document.getElementById('results');
+  let html = '';
+
+  if (data.errors && data.errors.length > 0) {
+    data.errors.forEach(err => {
+      html += `<div class="batch-error"><strong>Failed:</strong> ${err.brief} — ${err.error}</div>`;
+    });
+  }
+
+  data.results.forEach((result, i) => {
+    html += `
+      <div class="batch-result">
+        <div class="batch-result-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <h4>${result.topic}</h4>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span class="badge" style="background: rgba(99,102,241,0.15); color: var(--accent);">${result.scripts.length} scripts</span>
+            <a href="/ui/briefs/${result.brief_id}" class="btn btn-sm btn-secondary" onclick="event.stopPropagation();">View</a>
+          </div>
+        </div>
+        <div class="batch-result-body${i === 0 ? ' open' : ''}">
+    `;
+
+    result.scripts.forEach(s => {
+      html += `
+        <div class="batch-script">
+          <div>
+            <div class="batch-script-title">${s.title}</div>
+          </div>
+          <div class="batch-script-meta">
+            <span class="badge badge-${s.angle}">${s.angle.replace('_', ' ')}</span>
+            <span class="badge badge-${s.hook_type}">${s.hook_type}</span>
+            <span class="badge badge-${s.predicted_performance || 'medium'}">${s.predicted_performance || 'medium'}</span>
+          </div>
+        </div>
+      `;
+    });
+
+    html += '</div></div>';
+  });
+
+  container.innerHTML = html;
+}
+</script>
+{% endblock %}

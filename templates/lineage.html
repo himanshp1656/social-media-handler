@@ -1,0 +1,1343 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'overview' %}Content Lineage{% else %}{{ entity.type|title }} Lineage{% endif %} - Content Engine{% endblock %}
+
+{% block content %}
+{% if mode == 'overview' %}
+<!-- ===================== OVERVIEW MODE ===================== -->
+<div class="page-header">
+  <h2>Content Lineage</h2>
+  <p>Pipeline overview: how your content flows from trends to analytics</p>
+</div>
+
+<!-- Conversion Funnel -->
+<div class="lineage-funnel">
+  <div class="funnel-step">
+    <div class="funnel-icon" style="background: var(--cyan-dim); color: var(--cyan);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+    </div>
+    <div class="funnel-value">{{ stats.funnel.trends }}</div>
+    <div class="funnel-label">Trends</div>
+  </div>
+  <div class="funnel-arrow">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  </div>
+  <div class="funnel-step">
+    <div class="funnel-icon" style="background: var(--accent-dim); color: var(--accent);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+    <div class="funnel-value">{{ stats.funnel.briefs }}</div>
+    <div class="funnel-label">Briefs</div>
+  </div>
+  <div class="funnel-arrow">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  </div>
+  <div class="funnel-step">
+    <div class="funnel-icon" style="background: var(--green-dim); color: var(--green);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    </div>
+    <div class="funnel-value">{{ stats.funnel.scripts }}</div>
+    <div class="funnel-label">Scripts</div>
+  </div>
+  <div class="funnel-arrow">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  </div>
+  <div class="funnel-step">
+    <div class="funnel-icon" style="background: var(--orange-dim); color: var(--orange);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+    </div>
+    <div class="funnel-value">{{ stats.funnel.uploads }}</div>
+    <div class="funnel-label">Uploads</div>
+  </div>
+</div>
+
+<!-- Conversion Rates -->
+<div class="lineage-rates">
+  {% if stats.funnel.trends > 0 %}
+  <span>Trends to Briefs: <strong>{{ ((stats.funnel.briefs / stats.funnel.trends * 100) if stats.funnel.trends > 0 else 0) | round(0) | int }}%</strong></span>
+  {% endif %}
+  {% if stats.funnel.briefs > 0 %}
+  <span>Briefs to Scripts: <strong>{{ ((stats.funnel.scripts / stats.funnel.briefs * 100) if stats.funnel.briefs > 0 else 0) | round(0) | int }}%</strong></span>
+  {% endif %}
+  {% if stats.funnel.scripts > 0 %}
+  <span>Scripts Uploaded: <strong>{{ ((stats.funnel.uploads / stats.funnel.scripts * 100) if stats.funnel.scripts > 0 else 0) | round(0) | int }}%</strong></span>
+  {% endif %}
+</div>
+
+<!-- Path Comparison Cards -->
+<div class="lineage-grid">
+  <div class="card lineage-compare-card">
+    <h4>Trend-Sourced vs Manual</h4>
+    <div class="compare-row">
+      <div class="compare-col">
+        <div class="compare-label" style="color: var(--cyan);">Trend-Sourced</div>
+        <div class="compare-stat">{{ stats.trend_sourced.count }} scripts</div>
+        <div class="compare-detail">Avg Score: <strong>{{ stats.trend_sourced.avg_score }}</strong></div>
+        <div class="compare-detail">Uploaded: <strong>{{ stats.trend_sourced.uploaded }}</strong></div>
+      </div>
+      <div class="compare-divider"></div>
+      <div class="compare-col">
+        <div class="compare-label" style="color: var(--text-dim);">Manual</div>
+        <div class="compare-stat">{{ stats.manual.count }} scripts</div>
+        <div class="compare-detail">Avg Score: <strong>{{ stats.manual.avg_score }}</strong></div>
+        <div class="compare-detail">Uploaded: <strong>{{ stats.manual.uploaded }}</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card lineage-compare-card">
+    <h4>Template vs Freeform</h4>
+    <div class="compare-row">
+      <div class="compare-col">
+        <div class="compare-label" style="color: var(--yellow);">Template-Based</div>
+        <div class="compare-stat">{{ stats.template_based.count }} scripts</div>
+        <div class="compare-detail">Avg Score: <strong>{{ stats.template_based.avg_score }}</strong></div>
+        <div class="compare-detail">Uploaded: <strong>{{ stats.template_based.uploaded }}</strong></div>
+      </div>
+      <div class="compare-divider"></div>
+      <div class="compare-col">
+        <div class="compare-label" style="color: var(--text-dim);">Freeform</div>
+        <div class="compare-stat">{{ stats.freeform.count }} scripts</div>
+        <div class="compare-detail">Avg Score: <strong>{{ stats.freeform.avg_score }}</strong></div>
+        <div class="compare-detail">Uploaded: <strong>{{ stats.freeform.uploaded }}</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Top Performing Tables -->
+<div class="lineage-grid">
+  <div class="card">
+    <h4 style="margin-bottom: 12px;">Top Performing Trends</h4>
+    {% if stats.top_trends %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Keyword</th><th>Briefs</th><th>Total Score</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for t in stats.top_trends %}
+          <tr>
+            <td style="font-weight: 500;">{{ t.keyword }}</td>
+            <td>{{ t.brief_count }}</td>
+            <td>{{ t.total_score }}</td>
+            <td><a href="/ui/lineage/trend/{{ t.id }}" class="btn btn-sm btn-secondary">Lineage</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p style="color: var(--text-dim); font-size: 13px;">No trend-sourced content yet</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h4 style="margin-bottom: 12px;">Top Performing Templates</h4>
+    {% if stats.top_templates %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Template</th><th>Scripts</th><th>Avg Score</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for t in stats.top_templates %}
+          <tr>
+            <td style="font-weight: 500;">{{ t.name }}</td>
+            <td>{{ t.script_count }}</td>
+            <td>{{ t.avg_score }}</td>
+            <td><a href="/ui/lineage/template/{{ t.id }}" class="btn btn-sm btn-secondary">Lineage</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p style="color: var(--text-dim); font-size: 13px;">No templates used yet</p>
+    {% endif %}
+  </div>
+</div>
+
+{% else %}
+<!-- ===================== ENTITY MODE — HORIZONTAL GRAPH ===================== -->
+
+<!-- Info bar -->
+<div class="lg-info-bar">
+  <a href="/ui/lineage/overview" class="lg-back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg>
+    Overview
+  </a>
+  <span class="lg-divider">|</span>
+  <span class="lg-type-pill lg-type-{{ entity.type }}">{{ entity.type }}</span>
+  <span class="lg-info-label">{{ entity.label }}</span>
+  <span class="lg-divider">|</span>
+  <span class="lg-info-counts">
+    <span style="color: var(--cyan);">{{ upstream|length }} upstream</span>
+    <span style="color: var(--accent);">{{ downstream|length }} downstream</span>
+  </span>
+  <button class="lg-recenter-btn" onclick="centerGraph()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>
+    Recenter
+  </button>
+</div>
+
+<!-- Graph viewport -->
+<div class="lg-viewport" id="lgViewport">
+  <div class="lg-plane" id="lgPlane">
+    <svg class="lg-svg" id="lgSvg">
+      <style>@keyframes flowDash { to { stroke-dashoffset: -10; } }</style>
+    </svg>
+  </div>
+  <div class="lg-zoom-controls">
+    <button class="lg-zoom-btn" onclick="zoomIn()" title="Zoom in">+</button>
+    <span class="lg-zoom-level" id="zoomLevel">100%</span>
+    <button class="lg-zoom-btn" onclick="zoomOut()" title="Zoom out">&minus;</button>
+    <button class="lg-zoom-btn lg-zoom-fit" onclick="centerGraph()" title="Fit to screen">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Sidebar overlay -->
+<div class="lg-sidebar-overlay" id="lgOverlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<div class="lg-sidebar" id="lgSidebar">
+  <div class="lg-sidebar-resize" id="sbResizeHandle"></div>
+  <div class="lg-sidebar-header">
+    <span class="lg-sidebar-title" id="sbTitle"></span>
+    <button class="lg-sidebar-close" onclick="closeSidebar()">x</button>
+  </div>
+  <div class="lg-sidebar-body" id="sbBody"></div>
+</div>
+
+<style>
+  /* Hide parent main padding for full-bleed graph */
+  .main { padding: 0 !important; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+  .page-header { display: none; }
+
+  /* Info bar */
+  .lg-info-bar {
+    padding: 8px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 14;
+    background: rgba(12,13,18,0.8); backdrop-filter: blur(8px);
+    font-size: 13px; flex-shrink: 0; z-index: 10;
+  }
+  .lg-back-link { display: flex; align-items: center; gap: 4; color: var(--text-dim); text-decoration: none; font-size: 13px; }
+  .lg-back-link:hover { color: var(--accent); }
+  .lg-divider { color: var(--border); }
+  .lg-info-label { font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+  .lg-info-counts { display: flex; gap: 12; font-size: 12px; font-weight: 500; }
+  .lg-recenter-btn {
+    display: flex; align-items: center; gap: 4;
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+    padding: 4px 10px; border-radius: 6; font-size: 11px; cursor: pointer;
+  }
+  .lg-recenter-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Type pills */
+  .lg-type-pill {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 2px 10px; border-radius: 10px; white-space: nowrap;
+  }
+  .lg-type-trend { background: var(--cyan-dim); color: var(--cyan); }
+  .lg-type-brief { background: var(--accent-dim); color: var(--accent); }
+  .lg-type-script { background: var(--green-dim); color: var(--green); }
+  .lg-type-upload { background: var(--orange-dim); color: var(--orange); }
+  .lg-type-analytics { background: var(--pink-dim); color: var(--pink); }
+  .lg-type-template { background: var(--yellow-dim); color: var(--yellow); }
+
+  /* Viewport: pannable canvas */
+  .lg-viewport {
+    flex: 1; overflow: hidden; position: relative; cursor: grab;
+    user-select: none;
+    background: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.18) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+  .lg-viewport.panning { cursor: grabbing; }
+
+  /* SVG lines layer — inside the plane so it transforms with nodes */
+  .lg-svg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 1; overflow: visible;
+  }
+
+  /* The plane that gets panned/zoomed */
+  .lg-plane {
+    position: absolute; top: 0; left: 0;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 48px 40px; gap: 56px;
+    transform-origin: 0 0;
+    min-width: 100%; min-height: 100%;
+  }
+
+  /* Zoom controls */
+  .lg-zoom-controls {
+    position: absolute; bottom: 16px; right: 16px; z-index: 10;
+    display: flex; align-items: center; gap: 2px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .lg-zoom-btn {
+    width: 32px; height: 32px; border: none; background: transparent;
+    color: var(--text); font-size: 16px; font-weight: 600;
+    border-radius: 8px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; transition: background 0.15s;
+  }
+  .lg-zoom-btn:hover { background: rgba(255,255,255,0.08); }
+  .lg-zoom-btn:active { background: rgba(255,255,255,0.12); }
+  .lg-zoom-level {
+    font-size: 11px; font-weight: 600; color: var(--text-dim);
+    min-width: 40px; text-align: center; user-select: none;
+  }
+  .lg-zoom-fit { font-size: 14px; }
+
+  /* Columns sit above SVG */
+  .lg-column { z-index: 2; position: relative; }
+
+  /* Column */
+  .lg-column { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+  .lg-col-label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
+    padding: 4px 12px; border-radius: 20; text-align: center; align-self: center;
+  }
+
+  /* Node card */
+  .lg-node {
+    width: 240px; background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; cursor: pointer;
+    transition: all 0.18s; position: relative;
+  }
+  .lg-node:hover { transform: translateY(-2px); }
+  .lg-node.lg-node-selected { border-color: var(--accent) !important; box-shadow: 0 0 0 2px var(--accent), 0 4px 20px rgba(124,108,240,0.2); }
+  .lg-node-trend { border-left: 3px solid var(--cyan); }
+  .lg-node-trend:hover { border-color: var(--cyan); box-shadow: 0 4px 20px rgba(34,211,238,0.15); }
+  .lg-node-brief { border-left: 3px solid var(--accent); }
+  .lg-node-brief:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(124,108,240,0.15); }
+  .lg-node-script { border-left: 3px solid var(--green); }
+  .lg-node-script:hover { border-color: var(--green); box-shadow: 0 4px 20px rgba(52,211,153,0.15); }
+  .lg-node-upload { border-left: 3px solid var(--orange); }
+  .lg-node-upload:hover { border-color: var(--orange); box-shadow: 0 4px 20px rgba(251,146,60,0.15); }
+  .lg-node-analytics { border-left: 3px solid var(--pink); }
+  .lg-node-analytics:hover { border-color: var(--pink); box-shadow: 0 4px 20px rgba(244,114,182,0.15); }
+  .lg-node-template { border-left: 3px solid var(--yellow); }
+  .lg-node-template:hover { border-color: var(--yellow); box-shadow: 0 4px 20px rgba(251,191,36,0.15); }
+
+  .lg-node-title { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lg-node-meta { font-size: 11px; color: var(--text-dim); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lg-node-badges { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+  .lg-node-badge {
+    padding: 1px 8px; border-radius: 20px; font-size: 10px; font-weight: 500;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); color: var(--text-dim);
+  }
+
+  /* Center card (root node) — wider and highlighted */
+  .lg-center-card {
+    width: 300px; background: linear-gradient(135deg, rgba(124,108,240,0.06) 0%, var(--bg-card) 100%);
+    border: 2px solid var(--accent); border-radius: 14px;
+    padding: 20px 24px; text-align: center; cursor: pointer;
+    box-shadow: 0 0 40px -10px rgba(124,108,240,0.3);
+    transition: all 0.18s; position: relative;
+  }
+  .lg-center-card:hover { box-shadow: 0 0 50px -5px rgba(124,108,240,0.4); }
+  .lg-center-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .lg-center-meta { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+  .lg-center-counts { display: inline-flex; gap: 12px; margin-top: 10px; font-size: 11px; font-weight: 500; }
+
+  /* Sidebar */
+  .lg-sidebar-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+    z-index: 500; display: none;
+  }
+  .lg-sidebar-overlay.open { display: block; }
+  .lg-sidebar {
+    position: fixed; top: 0; right: 0; width: 480px; min-width: 320px; max-width: 80vw; height: 100vh;
+    background: var(--bg); border-left: 1px solid var(--border);
+    z-index: 600; display: flex; flex-direction: column;
+    transform: translateX(100%); transition: transform 0.25s ease;
+    box-shadow: -8px 0 32px rgba(0,0,0,0.5);
+  }
+  .lg-sidebar.open { transform: translateX(0); }
+  .lg-sidebar.resizing { transition: none; }
+  .lg-sidebar-resize {
+    position: absolute; left: -4px; top: 0; width: 8px; height: 100%;
+    cursor: col-resize; z-index: 10;
+  }
+  .lg-sidebar-resize::after {
+    content: ''; position: absolute; left: 3px; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 40px; border-radius: 3px;
+    background: var(--border); transition: background 0.15s;
+  }
+  .lg-sidebar-resize:hover::after { background: var(--accent); }
+  .lg-sidebar-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12; flex-shrink: 0;
+  }
+  .lg-sidebar-title { font-size: 15px; font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lg-sidebar-close {
+    width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 6px;
+    background: transparent; color: var(--text-dim); font-size: 16px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .lg-sidebar-close:hover { border-color: var(--accent); color: var(--accent); }
+  .lg-sidebar-body { flex: 1; overflow-y: auto; padding: 0; }
+
+  .sb-section { padding: 14px 20px; border-bottom: 1px solid var(--border); }
+  .sb-section:last-child { border-bottom: none; }
+  .sb-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 6px; }
+  .sb-row { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 4px; }
+  .sb-row-label { color: var(--text-dim); min-width: 70px; font-size: 11px; }
+  .sb-row-value { color: var(--text); }
+  .sb-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sb-stat-card {
+    background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px; text-align: center;
+  }
+  .sb-stat-val { font-size: 22px; font-weight: 800; line-height: 1; }
+  .sb-stat-lbl { font-size: 10px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .sb-link-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; font-size: 11px; background: transparent;
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--accent); text-decoration: none; cursor: pointer; transition: all 0.15s;
+  }
+  .sb-link-btn:hover { border-color: var(--accent); }
+  .sb-action-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; font-size: 12px; font-weight: 500;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); cursor: pointer; transition: all 0.15s;
+  }
+  .sb-action-btn:hover { background: rgba(99,102,241,0.1); border-color: var(--accent); color: var(--accent); }
+
+  /* Beats in sidebar */
+  .sb-beat {
+    border-left: 3px solid var(--border); padding: 8px 12px; margin-bottom: 4px;
+    background: var(--bg-input); border-radius: 0 6px 6px 0;
+  }
+
+  /* Expand/collapse button on nodes */
+  .lg-expand-btn {
+    display: block; width: 100%; margin-top: 8px; padding: 4px 0;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.15);
+    border-radius: 6px; font-size: 10px; font-weight: 600;
+    cursor: pointer; text-align: center; transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .lg-expand-btn:hover { background: rgba(255,255,255,0.08); }
+  .lg-collapse-btn { opacity: 0.6; }
+  .lg-collapse-btn:hover { opacity: 1; }
+
+  /* Version timeline in sidebar */
+  .sb-version { display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .sb-version:last-child { border-bottom: none; }
+  .sb-version-dot {
+    width: 10px; height: 10px; border-radius: 50%; margin-top: 3px; flex-shrink: 0;
+    border: 2px solid var(--border);
+  }
+  .sb-version-dot.regen { border-color: var(--orange); background: var(--orange-dim); }
+  .sb-version-dot.edit { border-color: var(--accent); background: var(--accent-dim); }
+</style>
+
+<script>
+const LINEAGE = {{ lineage_json | safe }};
+const TYPE_COLORS = {
+  trend: { color: 'var(--cyan)', bg: 'rgba(34,211,238,0.15)' },
+  brief: { color: 'var(--accent)', bg: 'rgba(124,108,240,0.15)' },
+  script: { color: 'var(--green)', bg: 'rgba(52,211,153,0.15)' },
+  upload: { color: 'var(--orange)', bg: 'rgba(251,146,60,0.15)' },
+  analytics: { color: 'var(--pink)', bg: 'rgba(244,114,182,0.15)' },
+  template: { color: 'var(--yellow)', bg: 'rgba(251,191,36,0.15)' },
+};
+
+// ---- Build full graph data from API response ----
+// allNodes: id -> node data (flat map)
+// allEdges: { fromId, toId }[]
+// nodeChildren: id -> [child ids]  (direct children in the graph)
+// expandedNodes: Set of ids whose children are visible
+const allNodes = {};
+const allEdges = [];
+const nodeChildren = {};
+const expandedNodes = new Set();
+
+function indexGraph(data) {
+  const root = data.root;
+  const upstream = data.upstream || [];
+  const downstream = data.downstream || [];
+  const versions = data.versions || [];
+
+  allNodes[root.id] = { ...root, _versions: versions, _depth: 0 };
+
+  // Upstream chain: each item's "child" is the next item or root
+  const upReversed = [...upstream].reverse();
+  upReversed.forEach((node, i) => {
+    allNodes[node.id] = { ...node, _depth: -(upReversed.length - i) };
+    const targetId = (i < upReversed.length - 1) ? upReversed[i + 1].id : root.id;
+    allEdges.push({ fromId: node.id, toId: targetId });
+    // The upstream node's children in the graph include the next node
+    nodeChildren[node.id] = nodeChildren[node.id] || [];
+    if (!nodeChildren[node.id].includes(targetId)) nodeChildren[node.id].push(targetId);
+    // Also index any children embedded in upstream nodes (e.g. sibling scripts on a brief)
+    if (node.children && node.children.length) {
+      indexDownstream(node.children, node.id, allNodes[node.id]._depth + 1);
+    }
+  });
+
+  // Downstream from root
+  indexDownstream(downstream, root.id, 1);
+}
+
+function indexDownstream(nodes, parentId, depth) {
+  if (!nodes || !nodes.length) return;
+  nodeChildren[parentId] = nodeChildren[parentId] || [];
+  nodes.forEach(node => {
+    if (!allNodes[node.id]) {
+      allNodes[node.id] = { ...node, _depth: depth };
+    }
+    if (!nodeChildren[parentId].includes(node.id)) {
+      nodeChildren[parentId].push(node.id);
+      allEdges.push({ fromId: parentId, toId: node.id });
+    }
+    if (node.children && node.children.length) {
+      indexDownstream(node.children, node.id, depth + 1);
+    }
+  });
+}
+
+indexGraph(LINEAGE);
+
+// ---- Visibility: only root + direct neighbors by default ----
+const rootId = LINEAGE.root.id;
+
+function initVisibility() {
+  expandedNodes.clear();
+  expandedNodes.add(rootId);
+  // Show root's direct upstream parents and downstream children
+  allEdges.forEach(e => {
+    if (e.toId === rootId) expandedNodes.add(e.fromId);   // upstream parent
+    if (e.fromId === rootId) expandedNodes.add(e.toId);    // downstream child
+  });
+}
+initVisibility();
+
+function toggleExpand(nodeId, evt) {
+  if (evt) { evt.stopPropagation(); evt.preventDefault(); }
+  const children = nodeChildren[nodeId] || [];
+  // Check if any child is already visible
+  const anyVisible = children.some(cid => expandedNodes.has(cid) && cid !== rootId);
+  if (anyVisible) {
+    // Collapse: hide children (and their descendants) recursively
+    collapseDescendants(nodeId);
+  } else {
+    // Expand: show direct children only
+    children.forEach(cid => expandedNodes.add(cid));
+  }
+  renderGraph();
+  setTimeout(() => requestAnimationFrame(drawLines), 50);
+}
+
+function collapseDescendants(nodeId) {
+  const children = nodeChildren[nodeId] || [];
+  children.forEach(cid => {
+    if (cid === rootId) return; // never hide root
+    expandedNodes.delete(cid);
+    collapseDescendants(cid);
+  });
+}
+
+// Count total descendants (for expand button label)
+function countDescendants(nodeId) {
+  const children = nodeChildren[nodeId] || [];
+  let count = 0;
+  children.forEach(cid => {
+    if (cid === rootId) return; // don't count root
+    if (!expandedNodes.has(cid)) count++;
+    count += countDescendants(cid);
+  });
+  return count;
+}
+
+// Count hidden direct children
+function hiddenChildCount(nodeId) {
+  const children = nodeChildren[nodeId] || [];
+  return children.filter(cid => !expandedNodes.has(cid) && cid !== rootId).length;
+}
+
+// Count visible direct children
+function visibleChildCount(nodeId) {
+  const children = nodeChildren[nodeId] || [];
+  return children.filter(cid => expandedNodes.has(cid) && cid !== rootId).length;
+}
+
+// ---- Build columns from visible nodes ----
+function buildVisibleColumns() {
+  // Collect all visible nodes grouped by depth
+  const depthMap = {};
+  expandedNodes.forEach(id => {
+    const node = allNodes[id];
+    if (!node) return;
+    const d = node._depth;
+    if (!depthMap[d]) depthMap[d] = [];
+    depthMap[d].push(node);
+  });
+
+  const depths = Object.keys(depthMap).map(Number).sort((a, b) => a - b);
+  const columns = [];
+  const visibleEdges = [];
+
+  depths.forEach(d => {
+    const nodes = depthMap[d];
+    const side = d < 0 ? 'upstream' : (d === 0 ? 'center' : 'downstream');
+    columns.push({ label: nodes[0]?.type || '', side, nodes });
+  });
+
+  // Edges: only between visible nodes
+  allEdges.forEach(e => {
+    if (expandedNodes.has(e.fromId) && expandedNodes.has(e.toId)) {
+      visibleEdges.push(e);
+    }
+  });
+
+  return { columns, visibleEdges };
+}
+
+// ---- Render ----
+let selectedId = null;
+let pan = { x: 0, y: 0 };
+let zoom = 1;
+let isPanning = false;
+let startMouse = { x: 0, y: 0 };
+let startPan = { x: 0, y: 0 };
+let currentEdges = [];
+
+function renderGraph() {
+  const plane = document.getElementById('lgPlane');
+  const svg = document.getElementById('lgSvg');
+  while (plane.lastChild) {
+    if (plane.lastChild === svg) break;
+    plane.removeChild(plane.lastChild);
+  }
+
+  const { columns, visibleEdges } = buildVisibleColumns();
+  currentEdges = visibleEdges;
+
+  columns.forEach(col => {
+    const colEl = document.createElement('div');
+    colEl.className = 'lg-column';
+
+    if (col.nodes.length > 0) {
+      const lbl = document.createElement('div');
+      lbl.className = 'lg-col-label';
+      const t = col.nodes[0]?.type || col.label;
+      const tc = TYPE_COLORS[t] || { color: 'var(--text-dim)', bg: 'rgba(255,255,255,0.05)' };
+      lbl.style.color = tc.color;
+      lbl.style.background = tc.bg;
+      lbl.style.border = '1px solid ' + tc.color + '25';
+      const plural = col.nodes.length > 1 ? 's' : '';
+      lbl.textContent = t + plural + ' (' + col.nodes.length + ')';
+      colEl.appendChild(lbl);
+    }
+
+    col.nodes.forEach(node => {
+      if (node.id === rootId) {
+        colEl.appendChild(renderCenterCard(node));
+      } else {
+        colEl.appendChild(renderNodeCard(node));
+      }
+    });
+    plane.appendChild(colEl);
+  });
+
+  updateTransform();
+  requestAnimationFrame(() => requestAnimationFrame(drawLines));
+}
+
+function renderCenterCard(node) {
+  const el = document.createElement('div');
+  el.className = 'lg-center-card';
+  el.setAttribute('data-node-id', node.id);
+  el.onclick = () => openSidebar(node.id);
+
+  const children = nodeChildren[node.id] || [];
+  const parents = allEdges.filter(e => e.toId === node.id).map(e => e.fromId);
+  const totalUp = parents.length;
+  const totalDown = children.length;
+
+  el.innerHTML = `
+    <div class="lg-type-pill lg-type-${node.type}" style="margin-bottom: 8px;">${node.type}</div>
+    <div class="lg-center-title">${esc(node.label)}</div>
+    <div class="lg-center-meta">${centerMeta(node)}</div>
+    <div class="lg-center-counts">
+      <span style="color: var(--cyan);">${totalUp} upstream</span>
+      <span style="color: var(--accent);">${totalDown} downstream</span>
+    </div>
+  `;
+  return el;
+}
+
+function renderNodeCard(node) {
+  const el = document.createElement('div');
+  el.className = 'lg-node lg-node-' + node.type;
+  el.setAttribute('data-node-id', node.id);
+  el.onclick = () => openSidebar(node.id);
+
+  let badges = '';
+  if (node.type === 'script') {
+    if (node.angle) badges += `<span class="lg-node-badge" style="border-color:var(--green);color:var(--green);">${esc((node.angle||'').replace('_',' '))}</span>`;
+    if (node.hook_type) badges += `<span class="lg-node-badge" style="border-color:var(--accent);color:var(--accent);">${esc(node.hook_type)}</span>`;
+    if (node.score) badges += `<span class="lg-node-badge" style="border-color:var(--yellow);color:var(--yellow);">Score: ${fmtNum(node.score)}</span>`;
+  } else if (node.type === 'upload') {
+    badges += `<span class="lg-node-badge" style="border-color:var(--orange);color:var(--orange);">${esc(node.status)}</span>`;
+  } else if (node.type === 'analytics') {
+    badges += `<span class="lg-node-badge" style="border-color:var(--pink);color:var(--pink);">${node.views} views</span>`;
+    if (node.ctr) badges += `<span class="lg-node-badge" style="border-color:var(--cyan);color:var(--cyan);">CTR ${node.ctr}%</span>`;
+  } else if (node.type === 'trend') {
+    if (node.source) badges += `<span class="lg-node-badge" style="border-color:var(--cyan);color:var(--cyan);">${esc(node.source)}</span>`;
+    if (node.score) badges += `<span class="lg-node-badge" style="border-color:var(--yellow);color:var(--yellow);">Score: ${fmtNum(node.score)}</span>`;
+  }
+
+  // Expand/collapse button
+  const totalChildren = (nodeChildren[node.id] || []).filter(c => c !== rootId).length;
+  const hiddenCount = hiddenChildCount(node.id);
+  const visCount = visibleChildCount(node.id);
+  let expandBtn = '';
+  if (totalChildren > 0) {
+    const tc = TYPE_COLORS[node.type] || TYPE_COLORS.brief;
+    if (hiddenCount > 0 && visCount === 0) {
+      expandBtn = `<button class="lg-expand-btn" onclick="toggleExpand('${node.id}', event)" style="border-color:${tc.color};color:${tc.color};">+ ${totalChildren} more</button>`;
+    } else if (visCount > 0 && hiddenCount > 0) {
+      expandBtn = `<button class="lg-expand-btn" onclick="toggleExpand('${node.id}', event)" style="border-color:${tc.color};color:${tc.color};">+ ${hiddenCount} more</button>`;
+    } else if (visCount > 0) {
+      expandBtn = `<button class="lg-expand-btn lg-collapse-btn" onclick="toggleExpand('${node.id}', event)" style="border-color:${tc.color};color:${tc.color};">&minus; collapse</button>`;
+    }
+  }
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+      <span class="lg-type-pill lg-type-${node.type}" style="font-size:9px;">${node.type}</span>
+    </div>
+    <div class="lg-node-title">${esc(node.label)}</div>
+    <div class="lg-node-meta">${nodeMeta(node)}</div>
+    ${badges ? '<div class="lg-node-badges">' + badges + '</div>' : ''}
+    ${expandBtn}
+  `;
+  return el;
+}
+
+function centerMeta(node) {
+  if (node.type === 'brief') return 'Topic: ' + esc(node.topic || '');
+  if (node.type === 'script') return esc((node.angle||'').replace('_',' ')) + ' + ' + esc(node.hook_type||'') + ' &middot; Score: ' + fmtNum(node.score||0);
+  if (node.type === 'trend') return 'Source: ' + esc(node.source||'') + ' &middot; Score: ' + fmtNum(node.score||0);
+  if (node.type === 'template') return esc((node.angle||'').replace('_',' ')) + ' + ' + esc(node.hook_type||'');
+  return '';
+}
+
+function nodeMeta(node) {
+  if (node.type === 'brief') return esc(node.topic || '');
+  if (node.type === 'script') return esc((node.angle||'').replace('_',' ')) + ' + ' + esc(node.hook_type||'');
+  if (node.type === 'upload') return esc(node.label || '');
+  if (node.type === 'analytics') return node.likes + ' likes &middot; ' + node.comments + ' comments';
+  if (node.type === 'trend') return esc((node.brief||'').slice(0, 60));
+  if (node.type === 'template') return esc((node.angle||'').replace('_',' '));
+  return '';
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function renderBeatsHTML(beats) {
+  if (!beats || !beats.length) return '<div style="font-size:12px;color:var(--text-dim);">No beats</div>';
+  const beatColors = { hook: 'var(--red)', problem: 'var(--orange)', insight: 'var(--accent)', proof: 'var(--green)', cta: 'var(--pink)', twist: 'var(--yellow)' };
+  return beats.map(b => {
+    const c = beatColors[b.type] || 'var(--text-dim)';
+    return `<div class="sb-beat" style="border-left-color:${c};">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+        <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:${c};">${esc(b.type)}</span>
+        <span style="font-size:10px;color:var(--text-dim);font-family:monospace;">${esc(b.timestamp)}</span>
+        <span style="font-size:10px;color:var(--text-dim);">${b.duration_seconds}s</span>
+      </div>
+      <div style="font-size:12px;line-height:1.5;color:var(--text);">${esc(b.voiceover)}</div>
+      ${b.on_screen_text ? '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;"><span style="font-weight:600;">Screen:</span> ' + esc(b.on_screen_text) + '</div>' : ''}
+      ${b.visual_cue ? '<div style="font-size:11px;color:var(--text-dim);"><span style="font-weight:600;">Visual:</span> ' + esc(b.visual_cue) + '</div>' : ''}
+      ${b.camera ? '<div style="font-size:11px;color:var(--text-dim);"><span style="font-weight:600;">Camera:</span> ' + esc(b.camera) + '</div>' : ''}
+    </div>`;
+  }).join('');
+}
+function fmtNum(n) {
+  if (!n && n !== 0) return '0';
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return String(n);
+}
+
+// ---- SVG bezier lines ----
+function drawLines() {
+  const svg = document.getElementById('lgSvg');
+  const plane = document.getElementById('lgPlane');
+  if (!plane || !svg) return;
+  const planeRect = plane.getBoundingClientRect();
+  const z = zoom;
+
+  while (svg.childElementCount > 1) svg.removeChild(svg.lastChild);
+
+  currentEdges.forEach(edge => {
+    const fromEl = document.querySelector('[data-node-id="' + edge.fromId + '"]');
+    const toEl = document.querySelector('[data-node-id="' + edge.toId + '"]');
+    if (!fromEl || !toEl) return;
+
+    const fr = fromEl.getBoundingClientRect();
+    const tr = toEl.getBoundingClientRect();
+
+    const x1 = (fr.right - planeRect.left) / z;
+    const y1 = (fr.top + fr.height / 2 - planeRect.top) / z;
+    const x2 = (tr.left - planeRect.left) / z;
+    const y2 = (tr.top + tr.height / 2 - planeRect.top) / z;
+
+    const cx = (x1 + x2) / 2;
+    const d = `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`;
+
+    const toNode = allNodes[edge.toId];
+    const tc = TYPE_COLORS[toNode?.type] || TYPE_COLORS.brief;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', tc.color);
+    path.setAttribute('stroke-width', '1.5');
+    path.setAttribute('stroke-dasharray', '6 4');
+    path.setAttribute('opacity', '0.7');
+    path.style.animation = 'flowDash 0.8s linear infinite';
+    svg.appendChild(path);
+  });
+}
+
+// ---- Pan/zoom ----
+function updateTransform() {
+  const plane = document.getElementById('lgPlane');
+  if (plane) plane.style.transform = `translate(${pan.x}px,${pan.y}px) scale(${zoom})`;
+}
+
+function centerGraph() {
+  const vp = document.getElementById('lgViewport');
+  const plane = document.getElementById('lgPlane');
+  if (!vp || !plane) return;
+  const vpR = vp.getBoundingClientRect();
+  const pw = plane.scrollWidth * zoom;
+  const ph = plane.scrollHeight * zoom;
+  pan = { x: (vpR.width - pw) / 2, y: Math.max(20, (vpR.height - ph) / 2) };
+  updateTransform();
+  updateZoomLabel();
+  requestAnimationFrame(() => requestAnimationFrame(drawLines));
+}
+
+function applyZoom(newZoom) {
+  const vp = document.getElementById('lgViewport');
+  if (!vp) return;
+  const rect = vp.getBoundingClientRect();
+  const cx = rect.width / 2;
+  const cy = rect.height / 2;
+  newZoom = Math.max(0.3, Math.min(2, newZoom));
+  pan = { x: cx - (cx - pan.x) * (newZoom / zoom), y: cy - (cy - pan.y) * (newZoom / zoom) };
+  zoom = newZoom;
+  updateTransform();
+  updateZoomLabel();
+  requestAnimationFrame(drawLines);
+}
+
+function zoomIn() { applyZoom(zoom + 0.15); }
+function zoomOut() { applyZoom(zoom - 0.15); }
+function updateZoomLabel() {
+  const el = document.getElementById('zoomLevel');
+  if (el) el.textContent = Math.round(zoom * 100) + '%';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const vp = document.getElementById('lgViewport');
+  if (!vp) return;
+
+  vp.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    if (e.target.closest('.lg-node') || e.target.closest('.lg-center-card')) return;
+    isPanning = true; vp.classList.add('panning');
+    startMouse = { x: e.clientX, y: e.clientY };
+    startPan = { ...pan };
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!isPanning) return;
+    pan = { x: startPan.x + e.clientX - startMouse.x, y: startPan.y + e.clientY - startMouse.y };
+    updateTransform();
+    drawLines();
+  });
+
+  window.addEventListener('mouseup', () => {
+    isPanning = false; vp.classList.remove('panning');
+  });
+
+  vp.addEventListener('wheel', e => {
+    e.preventDefault();
+    applyZoom(zoom + (e.deltaY > 0 ? -0.08 : 0.08));
+  }, { passive: false });
+
+  renderGraph();
+  setTimeout(centerGraph, 100);
+
+  // ---- Sidebar resize ----
+  const sbHandle = document.getElementById('sbResizeHandle');
+  const sb = document.getElementById('lgSidebar');
+  if (sbHandle && sb) {
+    let isResizing = false;
+    sbHandle.addEventListener('mousedown', e => {
+      e.preventDefault();
+      isResizing = true;
+      sb.classList.add('resizing');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+    window.addEventListener('mousemove', e => {
+      if (!isResizing) return;
+      const newWidth = window.innerWidth - e.clientX;
+      if (newWidth >= 320 && newWidth <= window.innerWidth * 0.8) {
+        sb.style.width = newWidth + 'px';
+      }
+    });
+    window.addEventListener('mouseup', () => {
+      if (isResizing) {
+        isResizing = false;
+        sb.classList.remove('resizing');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+    });
+  }
+});
+
+// ---- Sidebar ----
+function openSidebar(nodeId) {
+  selectedId = nodeId;
+  const node = allNodes[nodeId];
+  if (!node) return;
+
+  // Highlight selected
+  document.querySelectorAll('.lg-node-selected').forEach(el => el.classList.remove('lg-node-selected'));
+  const el = document.querySelector('[data-node-id="' + nodeId + '"]');
+  if (el) el.classList.add('lg-node-selected');
+
+  const tc = TYPE_COLORS[node.type] || TYPE_COLORS.brief;
+  document.getElementById('sbTitle').innerHTML = '<span class="lg-type-pill lg-type-' + node.type + '" style="margin-right:8px;">' + node.type + '</span>' + esc(node.label);
+  document.getElementById('sbTitle').style.color = tc.color;
+
+  const body = document.getElementById('sbBody');
+  body.innerHTML = buildSidebarContent(node);
+
+  document.getElementById('lgOverlay').classList.add('open');
+  document.getElementById('lgSidebar').classList.add('open');
+
+  // Fetch beats for script nodes
+  if (node.type === 'script' && !node._beats) {
+    fetch('/scripts/' + node.id)
+      .then(r => r.json())
+      .then(data => {
+        if (data.beats) {
+          node._beats = data.beats;
+          const container = document.getElementById('sbBeatsContainer');
+          if (container) container.innerHTML = renderBeatsHTML(data.beats);
+        }
+      })
+      .catch(() => {});
+  }
+}
+
+function closeSidebar() {
+  document.getElementById('lgOverlay').classList.remove('open');
+  document.getElementById('lgSidebar').classList.remove('open');
+  document.querySelectorAll('.lg-node-selected').forEach(el => el.classList.remove('lg-node-selected'));
+  selectedId = null;
+}
+
+function buildSidebarContent(node) {
+  let html = '';
+
+  // --- Type-specific content ---
+  if (node.type === 'trend') {
+    html += `<div class="sb-section">
+      <div class="sb-label">Trend Details</div>
+      <div class="sb-row"><span class="sb-row-label">Keyword</span><span class="sb-row-value" style="font-weight:600;">${esc(node.label)}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Source</span><span class="sb-row-value">${esc(node.source||'')}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Score</span><span class="sb-row-value" style="color:var(--yellow);font-weight:700;">${fmtNum(node.score||0)}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Status</span><span class="sb-row-value">${esc(node.status||'')}</span></div>
+      ${node.brief ? '<div style="margin-top:8px;font-size:12px;color:var(--text-dim);line-height:1.5;">' + esc(node.brief) + '</div>' : ''}
+    </div>`;
+  }
+
+  else if (node.type === 'brief') {
+    html += `<div class="sb-section">
+      <div class="sb-label">Brief Details</div>
+      <div class="sb-row"><span class="sb-row-label">Topic</span><span class="sb-row-value" style="font-weight:600;">${esc(node.topic||'')}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Created</span><span class="sb-row-value">${esc((node.created_at||'').slice(0,10))}</span></div>
+      ${node.suggestion_id ? '<div class="sb-row"><span class="sb-row-label">Source</span><span class="sb-row-value" style="color:var(--cyan);">From Trend</span></div>' : '<div class="sb-row"><span class="sb-row-label">Source</span><span class="sb-row-value">Manual</span></div>'}
+      <div style="margin-top:8px;font-size:12px;color:var(--text);line-height:1.5;">${esc(node.label)}</div>
+    </div>`;
+    html += `<div class="sb-section">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="/ui/briefs/${esc(node.id)}" class="sb-link-btn">View Brief Page</a>
+        <a href="/ui/lineage/brief/${esc(node.id)}" class="sb-link-btn">Focus Lineage</a>
+      </div>
+    </div>`;
+  }
+
+  else if (node.type === 'script') {
+    html += `<div class="sb-section">
+      <div class="sb-label">Script Details</div>
+      <div class="sb-row"><span class="sb-row-label">Title</span><span class="sb-row-value" style="font-weight:600;">${esc(node.label)}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Angle</span><span class="sb-row-value">${esc((node.angle||'').replace('_',' '))}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Hook</span><span class="sb-row-value">${esc(node.hook_type||'')}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Platform</span><span class="sb-row-value">${esc((node.platform||'youtube_shorts').replace('_',' '))}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Duration</span><span class="sb-row-value">${esc(node.duration||'30s')}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Score</span><span class="sb-row-value" style="color:var(--yellow);font-weight:700;">${fmtNum(node.score||0)}</span></div>
+    </div>`;
+    if (node.template_id || node.template) {
+      const tpl = node.template;
+      html += `<div class="sb-section">
+        <div class="sb-label">Template</div>
+        <div class="sb-row"><span class="sb-row-value" style="color:var(--yellow);">${tpl ? esc(tpl.label) : 'Linked'}</span></div>
+        ${tpl ? '<a href="/ui/lineage/template/' + esc(tpl.id) + '" class="sb-link-btn" style="margin-top:6px;">View Template Lineage</a>' : ''}
+      </div>`;
+    }
+
+    // Script content (beats) — loaded async
+    html += `<div class="sb-section">
+      <div class="sb-label">Script Content</div>
+      <div id="sbBeatsContainer">${node._beats ? renderBeatsHTML(node._beats) : '<div style="font-size:12px;color:var(--text-dim);">Loading beats...</div>'}</div>
+    </div>`;
+
+    // Actions
+    html += `<div class="sb-section">
+      <div class="sb-label">Actions</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="sb-action-btn" onclick="sbLinkVideo('${esc(node.id)}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          Link Video
+        </button>
+        <button class="sb-action-btn" onclick="sbUploadVideo('${esc(node.id)}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload Video
+        </button>
+        <button class="sb-action-btn" onclick="sbRegenerate('${esc(node.id)}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Regenerate
+        </button>
+        <button class="sb-action-btn" onclick="sbSaveTemplate('${esc(node.id)}', '${esc(node.label)}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/></svg>
+          Save as Template
+        </button>
+      </div>
+    </div>`;
+
+    // Navigation
+    html += `<div class="sb-section">
+      <div class="sb-label">Navigate</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="/ui/teleprompter/${esc(node.id)}" class="sb-link-btn" target="_blank">Teleprompter</a>
+        <a href="/ui/briefs/${esc(node.brief_id || '')}" class="sb-link-btn">View Brief</a>
+        <a href="/ui/lineage/script/${esc(node.id)}" class="sb-link-btn">Focus Lineage</a>
+      </div>
+    </div>`;
+
+    // Version history
+    const versions = node._versions || [];
+    if (versions.length) {
+      html += `<div class="sb-section">
+        <div class="sb-label">Version History (${versions.length})</div>
+        ${versions.map(v => `
+          <div class="sb-version">
+            <div class="sb-version-dot ${v.change_type === 'regenerated' ? 'regen' : 'edit'}"></div>
+            <div>
+              <div style="font-size:12px;font-weight:600;">v${v.version} <span class="lg-node-badge" style="border-color:${v.change_type==='regenerated'?'var(--orange)':'var(--accent)'};color:${v.change_type==='regenerated'?'var(--orange)':'var(--accent)'};">${esc(v.change_type)}</span></div>
+              <div style="font-size:11px;color:var(--text-dim);">${esc(v.title)}</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${esc((v.created_at||'').slice(0,19))}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
+    }
+  }
+
+  else if (node.type === 'upload') {
+    html += `<div class="sb-section">
+      <div class="sb-label">Upload Details</div>
+      <div class="sb-row"><span class="sb-row-label">Status</span><span class="sb-row-value" style="font-weight:600;color:${node.status==='uploaded'||node.status==='linked'?'var(--green)':'var(--orange)'};">${esc(node.status||'pending')}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Video ID</span><span class="sb-row-value">${esc(node.label||'pending')}</span></div>
+    </div>`;
+    if (node.label && node.label !== 'pending') {
+      html += `<div class="sb-section">
+        <div class="sb-label">YouTube</div>
+        <a href="https://youtube.com/watch?v=${encodeURIComponent(node.label)}" target="_blank" rel="noopener noreferrer" class="sb-link-btn" style="color:var(--red);border-color:var(--red);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/><polygon fill="#fff" points="9.545 15.568 15.818 12 9.545 8.432"/></svg>
+          Watch on YouTube
+        </a>
+      </div>`;
+    }
+  }
+
+  else if (node.type === 'analytics') {
+    html += `<div class="sb-section">
+      <div class="sb-label">Performance Analytics</div>
+      <div class="sb-stat-grid">
+        <div class="sb-stat-card">
+          <div class="sb-stat-val" style="color:var(--accent);">${(node.views||0).toLocaleString()}</div>
+          <div class="sb-stat-lbl">Views</div>
+        </div>
+        <div class="sb-stat-card">
+          <div class="sb-stat-val" style="color:var(--green);">${(node.likes||0).toLocaleString()}</div>
+          <div class="sb-stat-lbl">Likes</div>
+        </div>
+        <div class="sb-stat-card">
+          <div class="sb-stat-val" style="color:var(--cyan);">${(node.comments||0).toLocaleString()}</div>
+          <div class="sb-stat-lbl">Comments</div>
+        </div>
+        <div class="sb-stat-card">
+          <div class="sb-stat-val" style="color:var(--yellow);">${node.ctr||0}%</div>
+          <div class="sb-stat-lbl">CTR</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  else if (node.type === 'template') {
+    html += `<div class="sb-section">
+      <div class="sb-label">Template Details</div>
+      <div class="sb-row"><span class="sb-row-label">Name</span><span class="sb-row-value" style="font-weight:600;">${esc(node.label)}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Angle</span><span class="sb-row-value">${esc((node.angle||'').replace('_',' '))}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Hook</span><span class="sb-row-value">${esc(node.hook_type||'')}</span></div>
+    </div>`;
+    html += `<div class="sb-section">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="/ui/templates" class="sb-link-btn">View All Templates</a>
+        <a href="/ui/lineage/template/${esc(node.id)}" class="sb-link-btn">Focus Lineage</a>
+      </div>
+    </div>`;
+  }
+
+  return html;
+}
+
+// ---- Sidebar action handlers ----
+function sbLinkVideo(scriptId) {
+  closeSidebar();
+  document.getElementById('sbLinkScriptId').value = scriptId;
+  document.getElementById('sbLinkUrl').value = '';
+  document.getElementById('sbLinkModal').classList.add('active');
+}
+
+function sbUploadVideo(scriptId) {
+  closeSidebar();
+  document.getElementById('sbUploadScriptId').value = scriptId;
+  document.getElementById('sbVideoFile').value = '';
+  document.getElementById('sbUploadProgress').style.display = 'none';
+  document.getElementById('sbUploadModal').classList.add('active');
+}
+
+function sbRegenerate(scriptId) {
+  if (!confirm('Regenerate this script? Current version will be saved as a snapshot.')) return;
+  closeSidebar();
+  showLoading('Regenerating script...');
+  fetch('/scripts/regenerate/' + scriptId, { method: 'POST' })
+    .then(res => { if (!res.ok) throw new Error('Failed'); return res.json(); })
+    .then(() => { showToast('Script regenerated!', 'success'); setTimeout(() => location.reload(), 800); })
+    .catch(err => showToast('Error: ' + err.message, 'error'))
+    .finally(() => hideLoading());
+}
+
+function sbSaveTemplate(scriptId, title) {
+  closeSidebar();
+  document.getElementById('sbTplScriptId').value = scriptId;
+  document.getElementById('sbTplTitle').textContent = title;
+  document.getElementById('sbTplName').value = '';
+  document.getElementById('sbTplDesc').value = '';
+  document.getElementById('sbTplModal').classList.add('active');
+}
+
+function closeSbModal(id) { document.getElementById(id).classList.remove('active'); }
+
+async function sbSubmitLink(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled = true; btn.textContent = 'Linking...';
+  try {
+    const res = await fetch('/youtube/link', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        script_id: document.getElementById('sbLinkScriptId').value,
+        youtube_video_id: document.getElementById('sbLinkUrl').value,
+      }),
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Link failed'); }
+    closeSbModal('sbLinkModal');
+    showToast('Video linked!', 'success');
+    setTimeout(() => location.reload(), 800);
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Link Video'; }
+}
+
+async function sbSubmitUpload(e) {
+  e.preventDefault();
+  const fileInput = document.getElementById('sbVideoFile');
+  if (!fileInput.files.length) return;
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled = true; btn.textContent = 'Uploading...';
+  document.getElementById('sbUploadProgress').style.display = 'block';
+  const formData = new FormData();
+  formData.append('script_id', document.getElementById('sbUploadScriptId').value);
+  formData.append('privacy_status', document.getElementById('sbPrivacy').value);
+  formData.append('video', fileInput.files[0]);
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/youtube/upload-file');
+    xhr.upload.onprogress = function(ev) {
+      if (ev.lengthComputable) document.getElementById('sbUploadFill').style.width = Math.round((ev.loaded/ev.total)*100) + '%';
+    };
+    await new Promise((resolve, reject) => {
+      xhr.onload = () => { if (xhr.status >= 200 && xhr.status < 300) resolve(); else { try { reject(new Error(JSON.parse(xhr.responseText).detail)); } catch { reject(new Error('Upload failed')); } } };
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.send(formData);
+    });
+    closeSbModal('sbUploadModal');
+    showToast('Video uploaded!', 'success');
+    setTimeout(() => location.reload(), 800);
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Upload'; }
+}
+
+async function sbSubmitTemplate(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    const res = await fetch('/scripts/templates', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        script_id: document.getElementById('sbTplScriptId').value,
+        name: document.getElementById('sbTplName').value,
+        description: document.getElementById('sbTplDesc').value,
+      }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    closeSbModal('sbTplModal');
+    showToast('Template saved!', 'success');
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Save Template'; }
+}
+</script>
+
+<!-- Link Video Modal -->
+<div id="sbLinkModal" class="sb-modal-overlay" onclick="if(event.target===this)closeSbModal('sbLinkModal')">
+  <div class="sb-modal-box">
+    <h3>Link YouTube Video</h3>
+    <form onsubmit="sbSubmitLink(event)">
+      <input type="hidden" id="sbLinkScriptId" />
+      <div class="form-group">
+        <label>YouTube Video URL or ID</label>
+        <input type="text" id="sbLinkUrl" placeholder="https://youtube.com/watch?v=... or video ID" required />
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeSbModal('sbLinkModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm">Link Video</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Upload Video Modal -->
+<div id="sbUploadModal" class="sb-modal-overlay" onclick="if(event.target===this)closeSbModal('sbUploadModal')">
+  <div class="sb-modal-box">
+    <h3>Upload Video to YouTube</h3>
+    <form onsubmit="sbSubmitUpload(event)">
+      <input type="hidden" id="sbUploadScriptId" />
+      <div class="form-group">
+        <label>Video File</label>
+        <input type="file" id="sbVideoFile" accept=".mp4,.mov,.avi,.mkv,.webm,.flv,.wmv" required />
+      </div>
+      <div class="form-group">
+        <label>Privacy</label>
+        <select id="sbPrivacy">
+          <option value="private">Private</option>
+          <option value="unlisted">Unlisted</option>
+          <option value="public">Public</option>
+        </select>
+      </div>
+      <div id="sbUploadProgress" style="display:none;margin-bottom:12px;">
+        <div style="width:100%;height:6px;background:var(--bg-input);border-radius:3px;overflow:hidden;">
+          <div id="sbUploadFill" style="height:100%;width:0%;background:var(--accent);border-radius:3px;transition:width 0.3s;"></div>
+        </div>
+        <p style="font-size:12px;color:var(--text-dim);margin-top:4px;">Uploading...</p>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeSbModal('sbUploadModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm">Upload</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Save as Template Modal -->
+<div id="sbTplModal" class="sb-modal-overlay" onclick="if(event.target===this)closeSbModal('sbTplModal')">
+  <div class="sb-modal-box">
+    <h3>Save as Template</h3>
+    <p id="sbTplTitle" style="font-size:13px;color:var(--text-dim);margin-bottom:16px;"></p>
+    <form onsubmit="sbSubmitTemplate(event)">
+      <input type="hidden" id="sbTplScriptId" />
+      <div class="form-group">
+        <label>Template Name</label>
+        <input type="text" id="sbTplName" placeholder="e.g. Fear + Curiosity 30s Shorts" required />
+      </div>
+      <div class="form-group">
+        <label>Description (optional)</label>
+        <input type="text" id="sbTplDesc" placeholder="High-performing fear angle template" />
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeSbModal('sbTplModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm">Save Template</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endif %}
+
+<style>
+  /* Lineage sidebar modals */
+  .sb-modal-overlay { display:none; position:fixed; inset:0; background:rgba(15,17,23,0.85); z-index:1500; align-items:center; justify-content:center; }
+  .sb-modal-overlay.active { display:flex; }
+  .sb-modal-box { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; width:100%; max-width:480px; }
+  .sb-modal-box h3 { font-size:18px; margin-bottom:12px; }
+
+  /* ---- Overview styles (shared) ---- */
+  .lineage-funnel {
+    display: flex; align-items: center; justify-content: center; gap: 0;
+    padding: 28px 24px; background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 16px;
+  }
+  .funnel-step { text-align: center; min-width: 100px; }
+  .funnel-icon {
+    width: 48px; height: 48px; border-radius: 14px; display: flex;
+    align-items: center; justify-content: center; margin: 0 auto 8px;
+  }
+  .funnel-value { font-size: 28px; font-weight: 800; line-height: 1; }
+  .funnel-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .funnel-arrow { color: var(--text-muted); padding: 0 20px; margin-top: -20px; }
+  .lineage-rates {
+    display: flex; gap: 24px; justify-content: center;
+    margin-bottom: 24px; font-size: 13px; color: var(--text-dim);
+  }
+  .lineage-rates strong { color: var(--text); }
+  .lineage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .lineage-compare-card h4 { font-size: 14px; margin-bottom: 14px; color: var(--text-dim); font-weight: 600; }
+  .compare-row { display: flex; gap: 0; }
+  .compare-col { flex: 1; padding: 0 16px; }
+  .compare-divider { width: 1px; background: var(--border); }
+  .compare-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .compare-stat { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .compare-detail { font-size: 12px; color: var(--text-dim); margin-bottom: 2px; }
+  .compare-detail strong { color: var(--text); }
+</style>
+{% endblock %}
