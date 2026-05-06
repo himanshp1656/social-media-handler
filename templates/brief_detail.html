@@ -4,7 +4,9 @@
 {% block content %}
 <div class="page-header">
   <h2>{{ brief.raw_brief }}</h2>
-  <p>Brief ID: {{ brief.id }} &middot; Created: {{ brief.created_at[:10] if brief.created_at else '' }}</p>
+  <p>Brief ID: {{ brief.id }} &middot; Created: {{ brief.created_at[:10] if brief.created_at else '' }}
+    {% if brief.created_by and user_map %} &middot; <span class="creator-badge"><span class="cb-dot"></span>{{ user_map.get(brief.created_by, '') }}</span>{% endif %}
+  </p>
   <div style="display: flex; gap: 8px; margin-top: 8px;">
     <a href="/scripts/briefs/{{ brief.id }}/export" class="btn btn-sm btn-secondary">Export All Scripts</a>
     <a href="/ui/lineage/brief/{{ brief.id }}" class="btn btn-sm btn-secondary">View Lineage</a>
@@ -282,9 +284,8 @@
   .beat-voiceover { font-size: 13px; line-height: 1.5; margin-bottom: 4px; }
   .beat-details-collapsible {
     display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--text-dim);
-    max-height: 0; overflow: hidden; transition: max-height 0.2s ease;
+    margin-top: 4px;
   }
-  .beat-card.expanded .beat-details-collapsible { max-height: 200px; margin-top: 4px; }
   .beat-detail-label { font-weight: 600; }
   .beat-actions {
     position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s;

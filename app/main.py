@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.database import init_db, SessionLocal
+from app.auth.router import router as auth_router
 from app.scripts.router import router as scripts_router
 from app.youtube.router import router as youtube_router
 from app.trends.router import router as trends_router
@@ -64,6 +65,9 @@ app = FastAPI(
 
 # Static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Auth router (no auth required on these routes)
+app.include_router(auth_router)
 
 # API routers
 app.include_router(scripts_router)

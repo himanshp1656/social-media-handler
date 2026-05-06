@@ -71,6 +71,7 @@ def get_top_scripts(db: Session, limit: int = 10) -> list[dict]:
             "comments": s.comments,
             "platform": s.platform or "youtube_shorts",
             "duration": s.duration or "30s",
+            "created_by": s.created_by,
         }
         for s in scripts
     ]

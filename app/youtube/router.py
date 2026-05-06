@@ -9,10 +9,11 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Script, Upload, new_id
+from app.models import Script, Upload, User, new_id
 from app.youtube.auth import get_auth_url, handle_callback
 from app.youtube.upload import upload_video
 from app.youtube.analytics import fetch_all_analytics
+from app.auth.dependencies import get_current_user_api
 
 router = APIRouter(prefix="/youtube", tags=["youtube"])
 
@@ -36,8 +37,8 @@ class UploadRequest(BaseModel):
 
 
 @router.post("/upload")
-def upload(req: UploadRequest, db: Session = Depends(get_db)):
-    result = upload_video(db, req.script_id, req.video_file_path, req.privacy_status)
+def upload(req: UploadRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
+    result = upload_video(db, req.script_id, req.video_file_path, req.privacy_status, created_by=user.id)
     return result
 
 
@@ -66,7 +67,7 @@ def _extract_video_id(raw: str) -> str:
 
 
 @router.post("/link")
-def link_video(req: LinkRequest, db: Session = Depends(get_db)):
+def link_video(req: LinkRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """Link an existing YouTube video to a script."""
     script = db.query(Script).filter(Script.id == req.script_id).first()
     if not script:
@@ -82,6 +83,7 @@ def link_video(req: LinkRequest, db: Session = Depends(get_db)):
         script_id=req.script_id,
         youtube_video_id=video_id,
         upload_status="linked",
+        created_by=user.id,
         uploaded_at=datetime.now(timezone.utc),
     )
     db.add(upload_record)
@@ -106,6 +108,7 @@ async def upload_file(
     privacy_status: str = Form("private"),
     video: UploadFile = File(...),
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user_api),
 ):
     """Upload a video file directly to YouTube for a given script."""
     script = db.query(Script).filter(Script.id == script_id).first()
@@ -129,7 +132,7 @@ async def upload_file(
         tmp.write(contents)
         tmp.close()
 
-        result = upload_video(db, script_id, tmp.name, privacy_status)
+        result = upload_video(db, script_id, tmp.name, privacy_status, created_by=user.id)
         return result
     finally:
         if os.path.exists(tmp.name):
@@ -137,6 +140,6 @@ async def upload_file(
 
 
 @router.get("/fetch-analytics")
-def fetch_analytics(db: Session = Depends(get_db)):
+def fetch_analytics(db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     results = fetch_all_analytics(db)
     return {"fetched": len(results), "results": results}

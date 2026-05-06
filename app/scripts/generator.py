@@ -292,6 +292,7 @@ def generate_scripts(
     trend_keywords: list[str] | None = None,
     template_id: str | None = None,
     suggestion_id: str | None = None,
+    created_by: str | None = None,
 ) -> dict:
     # Load template if provided
     template_data = None
@@ -327,7 +328,7 @@ def generate_scripts(
     # Save brief
     brief_id = new_id()
     topic = " ".join(brief.split()[:5])
-    db_brief = ContentBrief(id=brief_id, topic=topic, raw_brief=brief, suggestion_id=suggestion_id)
+    db_brief = ContentBrief(id=brief_id, topic=topic, raw_brief=brief, suggestion_id=suggestion_id, created_by=created_by)
     db.add(db_brief)
 
     # Mark trend suggestion as "used" if linked
@@ -358,6 +359,7 @@ def generate_scripts(
             id=script_id,
             brief_id=brief_id,
             template_id=template_id,
+            created_by=created_by,
             angle=s["angle"],
             hook_type=s["hook_type"],
             platform=platform,

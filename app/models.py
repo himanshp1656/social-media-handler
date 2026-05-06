@@ -1,4 +1,6 @@
+import secrets
 from datetime import datetime, timezone
+
 from sqlalchemy import Column, String, Float, Integer, Text, ForeignKey, DateTime
 from app.database import Base
 from nanoid import generate
@@ -8,6 +10,25 @@ def new_id() -> str:
     return generate(size=12)
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String, primary_key=True, default=new_id)
+    email = Column(String, unique=True, nullable=False, index=True)
+    display_name = Column(String, nullable=False)
+    password_hash = Column(String, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class UserSession(Base):
+    __tablename__ = "user_sessions"
+
+    id = Column(String, primary_key=True, default=lambda: secrets.token_hex(32))
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime, nullable=False)
+
+
 class ContentBrief(Base):
     __tablename__ = "content_briefs"
 
@@ -15,6 +36,7 @@ class ContentBrief(Base):
     topic = Column(String, nullable=False)
     raw_brief = Column(Text, nullable=False)
     suggestion_id = Column(String, ForeignKey("trend_suggestions.id"), nullable=True)
+    created_by = Column(String, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -40,6 +62,7 @@ class Script(Base):
     likes = Column(Integer, default=0)
     comments = Column(Integer, default=0)
     score = Column(Float, default=0.0)
+    created_by = Column(String, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -71,6 +94,7 @@ class ScriptTemplate(Base):
     cta_goal = Column(String, nullable=False)
     beat_structure = Column(Text, nullable=False)  # JSON array of beat templates
     source_script_id = Column(String, nullable=True)  # script it was derived from
+    created_by = Column(String, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -81,6 +105,7 @@ class Upload(Base):
     script_id = Column(String, ForeignKey("scripts.id"), nullable=False)
     youtube_video_id = Column(String, nullable=True)
     upload_status = Column(String, default="pending")  # pending | uploaded | linked | failed
+    created_by = Column(String, ForeignKey("users.id"), nullable=True)
     uploaded_at = Column(DateTime, nullable=True)
 
 
@@ -109,6 +134,7 @@ class ScheduledPost(Base):
     youtube_video_id = Column(String, nullable=True)
     error_message = Column(Text, nullable=True)
     notes = Column(Text, nullable=True)
+    created_by = Column(String, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 

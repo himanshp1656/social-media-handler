@@ -4,14 +4,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy import asc, desc
 
 from app.database import get_db
-from app.models import CommentReply, Upload, Script, new_id
+from app.models import CommentReply, Upload, Script, User, new_id
 from app.youtube.auth import is_authenticated, get_credentials
+from app.auth.dependencies import get_current_user_api
 
 router = APIRouter(prefix="/comments", tags=["comments"])
 
 
 @router.post("/fetch/{upload_id}")
-def fetch_comments(upload_id: str, db: Session = Depends(get_db)):
+def fetch_comments(upload_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """Fetch YouTube comments for a video and save them."""
     if not is_authenticated():
         return {"error": "YouTube not connected"}
@@ -92,7 +93,7 @@ def fetch_comments(upload_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/generate-replies/{upload_id}")
-def generate_replies(upload_id: str, db: Session = Depends(get_db)):
+def generate_replies(upload_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """Generate AI replies for pending comments on a video."""
     pending = (
         db.query(CommentReply)
@@ -157,7 +158,7 @@ Respond ONLY with valid JSON array."""
 
 
 @router.get("/list/{upload_id}")
-def list_comments(upload_id: str, db: Session = Depends(get_db)):
+def list_comments(upload_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """List all comments and replies for a video."""
     comments = (
         db.query(CommentReply)
@@ -185,7 +186,7 @@ class UpdateReplyRequest(BaseModel):
 
 
 @router.patch("/{comment_id}")
-def update_reply(comment_id: str, req: UpdateReplyRequest, db: Session = Depends(get_db)):
+def update_reply(comment_id: str, req: UpdateReplyRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """Update a reply (edit text or change status)."""
     comment = db.query(CommentReply).filter(CommentReply.id == comment_id).first()
     if not comment:
@@ -201,7 +202,7 @@ def update_reply(comment_id: str, req: UpdateReplyRequest, db: Session = Depends
 
 
 @router.post("/post/{comment_id}")
-def post_reply(comment_id: str, db: Session = Depends(get_db)):
+def post_reply(comment_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """Post an approved reply to YouTube."""
     if not is_authenticated():
         return {"error": "YouTube not connected"}
@@ -230,7 +231,7 @@ def post_reply(comment_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/post-all/{upload_id}")
-def post_all_approved(upload_id: str, db: Session = Depends(get_db)):
+def post_all_approved(upload_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """Post all approved replies for a video."""
     if not is_authenticated():
         return {"error": "YouTube not connected"}

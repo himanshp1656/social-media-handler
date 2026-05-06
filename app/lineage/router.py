@@ -5,8 +5,9 @@ from sqlalchemy import func, desc
 from app.database import get_db
 from app.models import (
     TrendSuggestion, ContentBrief, Script, Beat, Upload, Analytics,
-    ScriptTemplate, ScheduledPost, ScriptVersion,
+    ScriptTemplate, ScheduledPost, ScriptVersion, User,
 )
+from app.auth.dependencies import get_current_user_api
 
 router = APIRouter(prefix="/lineage", tags=["lineage"])
 
@@ -81,7 +82,7 @@ def _get_downstream_from_brief(db: Session, brief_id: str):
 
 
 @router.get("/{entity_type}/{entity_id}")
-def get_lineage(entity_type: str, entity_id: str, db: Session = Depends(get_db)):
+def get_lineage(entity_type: str, entity_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """Get full upstream + downstream lineage graph for any entity."""
 
     if entity_type == "brief":
@@ -213,7 +214,7 @@ def get_lineage(entity_type: str, entity_id: str, db: Session = Depends(get_db))
 
 
 @router.get("/stats/pipeline")
-def pipeline_stats(db: Session = Depends(get_db)):
+def pipeline_stats(db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """Aggregate pipeline stats: trend vs manual, template vs freeform."""
     total_trends = db.query(func.count(TrendSuggestion.id)).scalar() or 0
     total_briefs = db.query(func.count(ContentBrief.id)).scalar() or 0

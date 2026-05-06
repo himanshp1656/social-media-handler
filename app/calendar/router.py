@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
 from app.database import get_db
-from app.models import ScheduledPost, Script, new_id
+from app.models import ScheduledPost, Script, User, new_id
+from app.auth.dependencies import get_current_user_api
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 
@@ -29,6 +30,7 @@ async def schedule_post(
     notes: str = Form(""),
     video: UploadFile = File(...),
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user_api),
 ):
     """Schedule a video to be posted at a specific time."""
     script = db.query(Script).filter(Script.id == script_id).first()
@@ -50,6 +52,7 @@ async def schedule_post(
         scheduled_at=scheduled_dt,
         privacy_status=privacy_status,
         notes=notes,
+        created_by=user.id,
     )
     db.add(post)
     db.commit()
@@ -63,7 +66,7 @@ async def schedule_post(
 
 
 @router.get("/week")
-def get_week(date: str = "", db: Session = Depends(get_db)):
+def get_week(date: str = "", db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """Get all scheduled posts for a week. Pass date as YYYY-MM-DD (defaults to this week)."""
     if date:
         base = datetime.strptime(date, "%Y-%m-%d")
@@ -108,7 +111,7 @@ def get_week(date: str = "", db: Session = Depends(get_db)):
 
 
 @router.patch("/{post_id}")
-def reschedule(post_id: str, scheduled_at: str, db: Session = Depends(get_db)):
+def reschedule(post_id: str, scheduled_at: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """Reschedule a post to a new time."""
     post = db.query(ScheduledPost).filter(ScheduledPost.id == post_id).first()
     if not post:
@@ -123,7 +126,7 @@ def reschedule(post_id: str, scheduled_at: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/{post_id}")
-def delete_post(post_id: str, db: Session = Depends(get_db)):
+def delete_post(post_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """Delete a scheduled post."""
     post = db.query(ScheduledPost).filter(ScheduledPost.id == post_id).first()
     if not post:
@@ -141,7 +144,7 @@ def delete_post(post_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/upcoming")
-def upcoming_posts(db: Session = Depends(get_db)):
+def upcoming_posts(db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     """Get next 10 upcoming scheduled posts."""
     now = datetime.now(timezone.utc)
     posts = (

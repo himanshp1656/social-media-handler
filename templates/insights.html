@@ -24,6 +24,7 @@
       <tr>
         <th>#</th>
         <th>Title</th>
+        <th>Creator</th>
         <th>Angle</th>
         <th>Hook</th>
         <th>Views</th>
@@ -37,6 +38,7 @@
       <tr>
         <td class="rank">{{ loop.index }}</td>
         <td class="title-cell">{{ s.title }}</td>
+        <td>{% if s.created_by and user_map %}<span class="creator-badge"><span class="cb-dot"></span>{{ user_map.get(s.created_by, '') }}</span>{% endif %}</td>
         <td><span class="badge badge-{{ s.angle }}">{{ s.angle.replace('_', ' ') }}</span></td>
         <td><span class="badge badge-{{ s.hook_type }}">{{ s.hook_type }}</span></td>
         <td class="num">{{ "{:,}".format(s.views) }}</td>

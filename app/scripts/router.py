@@ -6,8 +6,9 @@ from sqlalchemy import desc
 
 import json
 from app.database import get_db
-from app.models import ContentBrief, Script, Beat, ScriptTemplate, ScriptVersion, new_id
+from app.models import ContentBrief, Script, Beat, ScriptTemplate, ScriptVersion, User, new_id
 from app.scripts.generator import generate_scripts, regenerate_single_script, _snapshot_script
+from app.auth.dependencies import get_current_user_api
 
 router = APIRouter(prefix="/scripts", tags=["scripts"])
 
@@ -30,13 +31,13 @@ class BatchGenerateRequest(BaseModel):
 
 
 @router.post("/generate")
-def generate(req: GenerateRequest, db: Session = Depends(get_db)):
-    result = generate_scripts(db, req.brief, req.platform, req.duration, req.language, req.trend_keywords, req.template_id, req.suggestion_id)
+def generate(req: GenerateRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
+    result = generate_scripts(db, req.brief, req.platform, req.duration, req.language, req.trend_keywords, req.template_id, req.suggestion_id, created_by=user.id)
     return result
 
 
 @router.post("/generate/batch")
-def generate_batch(req: BatchGenerateRequest, db: Session = Depends(get_db)):
+def generate_batch(req: BatchGenerateRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     results = []
     errors = []
     for brief in req.briefs:
@@ -44,7 +45,7 @@ def generate_batch(req: BatchGenerateRequest, db: Session = Depends(get_db)):
         if not brief:
             continue
         try:
-            result = generate_scripts(db, brief, req.platform, req.duration, req.language)
+            result = generate_scripts(db, brief, req.platform, req.duration, req.language, created_by=user.id)
             results.append(result)
         except Exception as e:
             errors.append({"brief": brief, "error": str(e)})
@@ -52,7 +53,7 @@ def generate_batch(req: BatchGenerateRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/briefs")
-def list_briefs(db: Session = Depends(get_db)):
+def list_briefs(db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     briefs = db.query(ContentBrief).order_by(desc(ContentBrief.created_at)).limit(20).all()
     return [
         {"id": b.id, "topic": b.topic, "raw_brief": b.raw_brief, "created_at": str(b.created_at)}
@@ -61,7 +62,7 @@ def list_briefs(db: Session = Depends(get_db)):
 
 
 @router.get("/briefs/{brief_id}")
-def get_scripts_for_brief(brief_id: str, db: Session = Depends(get_db)):
+def get_scripts_for_brief(brief_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     scripts = db.query(Script).filter(Script.brief_id == brief_id).all()
     result = []
     for s in scripts:
@@ -104,7 +105,7 @@ def get_scripts_for_brief(brief_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/briefs/{brief_id}/export")
-def export_brief(brief_id: str, db: Session = Depends(get_db)):
+def export_brief(brief_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     brief = db.query(ContentBrief).filter(ContentBrief.id == brief_id).first()
     if not brief:
         return PlainTextResponse("Brief not found", status_code=404)
@@ -152,7 +153,7 @@ def export_brief(brief_id: str, db: Session = Depends(get_db)):
 # ---- Get single script with beats ----
 
 @router.get("/{script_id}")
-def get_script(script_id: str, db: Session = Depends(get_db)):
+def get_script(script_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     script = db.query(Script).filter(Script.id == script_id).first()
     if not script:
         return {"error": "Script not found"}
@@ -178,7 +179,7 @@ def get_script(script_id: str, db: Session = Depends(get_db)):
 # ---- Regenerate single script ----
 
 @router.post("/regenerate/{script_id}")
-def regenerate(script_id: str, db: Session = Depends(get_db)):
+def regenerate(script_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     script = db.query(Script).filter(Script.id == script_id).first()
     if not script:
         return {"error": "Script not found"}
@@ -205,7 +206,7 @@ class EditBeatRequest(BaseModel):
 
 
 @router.patch("/beats/{beat_id}")
-def edit_beat(beat_id: str, req: EditBeatRequest, db: Session = Depends(get_db)):
+def edit_beat(beat_id: str, req: EditBeatRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     beat = db.query(Beat).filter(Beat.id == beat_id).first()
     if not beat:
         return {"error": "Beat not found"}
@@ -225,7 +226,7 @@ def edit_beat(beat_id: str, req: EditBeatRequest, db: Session = Depends(get_db))
 
 
 @router.patch("/{script_id}")
-def edit_script(script_id: str, req: EditScriptRequest, db: Session = Depends(get_db)):
+def edit_script(script_id: str, req: EditScriptRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     script = db.query(Script).filter(Script.id == script_id).first()
     if not script:
         return {"error": "Script not found"}
@@ -243,7 +244,7 @@ def edit_script(script_id: str, req: EditScriptRequest, db: Session = Depends(ge
 # ---- Version history ----
 
 @router.get("/{script_id}/versions")
-def list_versions(script_id: str, db: Session = Depends(get_db)):
+def list_versions(script_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     versions = (
         db.query(ScriptVersion)
         .filter(ScriptVersion.script_id == script_id)
@@ -275,7 +276,7 @@ class SaveTemplateRequest(BaseModel):
 
 
 @router.post("/templates")
-def save_template(req: SaveTemplateRequest, db: Session = Depends(get_db)):
+def save_template(req: SaveTemplateRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     script = db.query(Script).filter(Script.id == req.script_id).first()
     if not script:
         return {"error": "Script not found"}
@@ -309,6 +310,7 @@ def save_template(req: SaveTemplateRequest, db: Session = Depends(get_db)):
         cta_goal=script.cta_goal,
         beat_structure=json.dumps(beat_structure),
         source_script_id=script.id,
+        created_by=user.id,
     )
     db.add(template)
     db.commit()
@@ -317,7 +319,7 @@ def save_template(req: SaveTemplateRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/templates")
-def list_templates(db: Session = Depends(get_db)):
+def list_templates(db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     tpls = db.query(ScriptTemplate).order_by(desc(ScriptTemplate.created_at)).all()
     return [
         {
@@ -338,7 +340,7 @@ def list_templates(db: Session = Depends(get_db)):
 
 
 @router.delete("/templates/{template_id}")
-def delete_template(template_id: str, db: Session = Depends(get_db)):
+def delete_template(template_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
     tpl = db.query(ScriptTemplate).filter(ScriptTemplate.id == template_id).first()
     if not tpl:
         return {"error": "Template not found"}

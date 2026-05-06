@@ -4,18 +4,26 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
 
 from app.database import get_db
-from app.models import ContentBrief, Script, Beat, Upload, TrendSuggestion, ScheduledPost, CommentReply
+from app.models import ContentBrief, Script, Beat, Upload, TrendSuggestion, ScheduledPost, CommentReply, User
 from app.feedback.scorer import get_top_scripts
 from app.youtube.auth import is_authenticated
+from app.auth.dependencies import get_current_user
 
 router = APIRouter(tags=["ui"])
 templates = Jinja2Templates(directory="templates")
 
 
+def _user_map(db: Session) -> dict:
+    """Build {user_id: display_name} lookup for attribution badges."""
+    users = db.query(User).all()
+    return {u.id: u.display_name for u in users}
+
+
 @router.get("/")
-def dashboard(request: Request, db: Session = Depends(get_db)):
+def dashboard(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     briefs = db.query(ContentBrief).order_by(desc(ContentBrief.created_at)).limit(5).all()
     suggestions = db.query(TrendSuggestion).order_by(desc(TrendSuggestion.created_at)).limit(5).all()
+    umap = _user_map(db)
 
     stats = {
         "briefs": db.query(func.count(ContentBrief.id)).scalar() or 0,
@@ -27,6 +35,8 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "active": "dashboard",
+        "current_user": user,
+        "user_map": umap,
         "stats": stats,
         "briefs": [_brief_dict(b) for b in briefs],
         "suggestions": [_suggestion_dict(s) for s in suggestions],
@@ -34,7 +44,7 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/ui/generate")
-def generate_page(request: Request, brief: str = "", template_id: str = "", suggestion_id: str = "", db: Session = Depends(get_db)):
+def generate_page(request: Request, brief: str = "", template_id: str = "", suggestion_id: str = "", db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     template = None
     if template_id:
         from app.models import ScriptTemplate
@@ -44,6 +54,7 @@ def generate_page(request: Request, brief: str = "", template_id: str = "", sugg
     return templates.TemplateResponse("generate.html", {
         "request": request,
         "active": "generate",
+        "current_user": user,
         "prefill": brief,
         "template": template,
         "suggestion_id": suggestion_id,
@@ -51,36 +62,43 @@ def generate_page(request: Request, brief: str = "", template_id: str = "", sugg
 
 
 @router.get("/ui/batch")
-def batch_page(request: Request):
+def batch_page(request: Request, user: User = Depends(get_current_user)):
     return templates.TemplateResponse("batch.html", {
         "request": request,
         "active": "batch",
+        "current_user": user,
     })
 
 
 @router.get("/ui/templates")
-def templates_page(request: Request, db: Session = Depends(get_db)):
+def templates_page(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     from app.models import ScriptTemplate
     tpls = db.query(ScriptTemplate).order_by(desc(ScriptTemplate.created_at)).all()
+    umap = _user_map(db)
     return templates.TemplateResponse("templates.html", {
         "request": request,
         "active": "templates",
+        "current_user": user,
+        "user_map": umap,
         "templates": [_template_dict(t) for t in tpls],
     })
 
 
 @router.get("/ui/briefs")
-def briefs_page(request: Request, db: Session = Depends(get_db)):
+def briefs_page(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     briefs = db.query(ContentBrief).order_by(desc(ContentBrief.created_at)).limit(50).all()
+    umap = _user_map(db)
     return templates.TemplateResponse("briefs.html", {
         "request": request,
         "active": "briefs",
+        "current_user": user,
+        "user_map": umap,
         "briefs": [_brief_dict(b) for b in briefs],
     })
 
 
 @router.get("/ui/briefs/{brief_id}")
-def brief_detail_page(brief_id: str, request: Request, db: Session = Depends(get_db)):
+def brief_detail_page(brief_id: str, request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     brief = db.query(ContentBrief).filter(ContentBrief.id == brief_id).first()
     if not brief:
         return templates.TemplateResponse("briefs.html", {
@@ -119,9 +137,12 @@ def brief_detail_page(brief_id: str, request: Request, db: Session = Depends(get
             "camera": b.camera,
         })
 
+    umap = _user_map(db)
     return templates.TemplateResponse("brief_detail.html", {
         "request": request,
         "active": "briefs",
+        "current_user": user,
+        "user_map": umap,
         "brief": _brief_dict(brief),
         "scripts": [_script_dict(s) for s in scripts],
         "beats_map": beats_map,
@@ -131,7 +152,7 @@ def brief_detail_page(brief_id: str, request: Request, db: Session = Depends(get
 
 
 @router.get("/ui/teleprompter/{script_id}")
-def teleprompter_page(script_id: str, request: Request, db: Session = Depends(get_db)):
+def teleprompter_page(script_id: str, request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     script = db.query(Script).filter(Script.id == script_id).first()
     if not script:
         return templates.TemplateResponse("briefs.html", {"request": request, "active": "briefs", "briefs": []})
@@ -139,6 +160,7 @@ def teleprompter_page(script_id: str, request: Request, db: Session = Depends(ge
     beats = db.query(Beat).filter(Beat.script_id == script_id).order_by(Beat.beat_number).all()
     return templates.TemplateResponse("teleprompter.html", {
         "request": request,
+        "current_user": user,
         "script": _script_dict(script),
         "beats": [
             {"type": b.beat_type, "timestamp": b.timestamp, "duration_seconds": b.duration_seconds,
@@ -149,17 +171,18 @@ def teleprompter_page(script_id: str, request: Request, db: Session = Depends(ge
 
 
 @router.get("/ui/trends")
-def trends_page(request: Request, db: Session = Depends(get_db)):
+def trends_page(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     suggestions = db.query(TrendSuggestion).order_by(desc(TrendSuggestion.created_at)).limit(30).all()
     return templates.TemplateResponse("trends.html", {
         "request": request,
         "active": "trends",
+        "current_user": user,
         "suggestions": [_suggestion_dict(s) for s in suggestions],
     })
 
 
 @router.get("/ui/calendar")
-def calendar_page(request: Request, date: str = "", db: Session = Depends(get_db)):
+def calendar_page(request: Request, date: str = "", db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     from datetime import datetime, timezone
     import calendar as cal_module
 
@@ -228,6 +251,7 @@ def calendar_page(request: Request, date: str = "", db: Session = Depends(get_db
     return templates.TemplateResponse("calendar.html", {
         "request": request,
         "active": "calendar",
+        "current_user": user,
         "grid": grid,
         "month_name": first_day.strftime("%B %Y"),
         "prev_month": prev_month_date.strftime("%Y-%m-%d"),
@@ -237,7 +261,7 @@ def calendar_page(request: Request, date: str = "", db: Session = Depends(get_db
 
 
 @router.get("/ui/comments")
-def comments_page(request: Request, upload_id: str = "", db: Session = Depends(get_db)):
+def comments_page(request: Request, upload_id: str = "", db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     uploads = (
         db.query(Upload)
         .filter(Upload.upload_status.in_(["uploaded", "linked"]))
@@ -275,6 +299,7 @@ def comments_page(request: Request, upload_id: str = "", db: Session = Depends(g
     return templates.TemplateResponse("comments.html", {
         "request": request,
         "active": "comments",
+        "current_user": user,
         "uploads": upload_list,
         "selected_upload": upload_id,
         "comments": comments,
@@ -282,35 +307,39 @@ def comments_page(request: Request, upload_id: str = "", db: Session = Depends(g
 
 
 @router.get("/ui/insights")
-def insights_page(request: Request, db: Session = Depends(get_db)):
+def insights_page(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     top = get_top_scripts(db, limit=10)
+    umap = _user_map(db)
     return templates.TemplateResponse("insights.html", {
         "request": request,
         "active": "insights",
+        "current_user": user,
+        "user_map": umap,
         "scripts": top,
     })
 
 
 @router.get("/ui/lineage/overview")
-def lineage_overview(request: Request, db: Session = Depends(get_db)):
+def lineage_overview(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     from app.lineage.router import pipeline_stats as _pipeline_stats
-    stats = _pipeline_stats(db)
+    stats = _pipeline_stats(db, user)
     return templates.TemplateResponse("lineage.html", {
         "request": request,
         "active": "lineage",
+        "current_user": user,
         "mode": "overview",
         "stats": stats,
     })
 
 
 @router.get("/ui/lineage/{entity_type}/{entity_id}")
-def lineage_entity(entity_type: str, entity_id: str, request: Request, db: Session = Depends(get_db)):
+def lineage_entity(entity_type: str, entity_id: str, request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     import json as _json
     from app.lineage.router import get_lineage as _get_lineage
-    data = _get_lineage(entity_type, entity_id, db)
+    data = _get_lineage(entity_type, entity_id, db, user)
     if "error" in data:
         return templates.TemplateResponse("lineage.html", {
-            "request": request, "active": "lineage", "mode": "overview",
+            "request": request, "active": "lineage", "current_user": user, "mode": "overview",
             "stats": {"funnel": {"trends": 0, "briefs": 0, "scripts": 0, "uploads": 0},
                       "trend_sourced": {"count": 0, "avg_score": 0, "uploaded": 0},
                       "manual": {"count": 0, "avg_score": 0, "uploaded": 0},
@@ -322,6 +351,7 @@ def lineage_entity(entity_type: str, entity_id: str, request: Request, db: Sessi
     return templates.TemplateResponse("lineage.html", {
         "request": request,
         "active": "lineage",
+        "current_user": user,
         "mode": "entity",
         "entity": data.get("root", {}),
         "upstream": data.get("upstream", []),
@@ -340,6 +370,7 @@ def _brief_dict(b: ContentBrief) -> dict:
         "topic": b.topic,
         "raw_brief": b.raw_brief,
         "suggestion_id": b.suggestion_id,
+        "created_by": b.created_by,
         "created_at": str(b.created_at) if b.created_at else "",
     }
 
@@ -367,6 +398,7 @@ def _script_dict(s: Script) -> dict:
         "predicted_performance": s.predicted_performance,
         "score": s.score,
         "template_id": s.template_id,
+        "created_by": s.created_by,
     }
 
 
