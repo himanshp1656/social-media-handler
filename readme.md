@@ -154,34 +154,50 @@ User records video
 
 ### 4. Feedback Loop (closes the circle)
 ```
-APScheduler (every 6 hours)
-         │
-         ▼
-┌──────────────────┐
-│ Fetch Analytics  │──► YouTube Data API
-│                  │◄── views, likes, comments, CTR, watch time
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────┐
-│ Score Propagation│
-│                  │
-│  Upload gets analytics
-│       │
-│       ▼
-│  Script.score = views + (likes × 10) + (comments × 20)
-│       │
-│       ▼
-│  Trend.score = SUM(all script scores under its briefs)
-│       │
-│       ▼
-│  DB updated ──► Next script generation sees new top/bottom
-│                 performers ──► AI adapts its output
-└──────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    APScheduler (every 6 hours)                   │
+│                                                                  │
+│  ┌──────────────────┐       ┌─────────────────────┐            │
+│  │  Fetch Analytics │──────►│  YouTube Data API    │            │
+│  │                  │◄──────│                      │            │
+│  └────────┬─────────┘       │  Returns per video:  │            │
+│           │                 │  views, likes,       │            │
+│           │                 │  comments, CTR,      │            │
+│           │                 │  watch time          │            │
+│           │                 └─────────────────────┘            │
+│           ▼                                                     │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │                   Score Propagation                      │   │
+│  │                                                          │   │
+│  │  Step 1:  Upload ← analytics (views, likes, comments)   │   │
+│  │                                                          │   │
+│  │  Step 2:  Script.score = views + likes×10 + comments×20 │   │
+│  │           (aggregated across all uploads per script)     │   │
+│  │                                                          │   │
+│  │  Step 3:  Trend.score = SUM of all script scores        │   │
+│  │           across all briefs linked to that trend         │   │
+│  │                                                          │   │
+│  │  Step 4:  DB updated with new scores                     │   │
+│  └──────────────────────────┬──────────────────────────────┘   │
+│                              │                                   │
+└──────────────────────────────┼───────────────────────────────────┘
+                               │
+                               ▼
+                ┌──────────────────────────┐
+                │  Next Script Generation  │
+                │                          │
+                │  Reads top 3 + bottom 3  │
+                │  by score from DB        │
+                │  ──► injects into prompt │
+                │  ──► AI adapts output    │
+                └──────────────────────────┘
 
-The loop:  Generate ──► Upload ──► Analytics ──► Score ──► Feedback ──┐
-              ▲                                                        │
-              └────────────────────────────────────────────────────────┘
+  ┌──────────┐     ┌────────┐     ┌───────────┐     ┌───────┐     ┌──────────┐
+  │ Generate ├────►│ Upload ├────►│ Analytics ├────►│ Score ├────►│ Feedback │
+  └─────▲────┘     └────────┘     └───────────┘     └───────┘     └────┬─────┘
+        │                                                               │
+        └───────────────────────────────────────────────────────────────┘
+                          AI learns what works
 ```
 
 ### 5. Visualization Layer
