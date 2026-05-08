@@ -74,83 +74,145 @@ For a single-server content tool, SQLite is the right choice:
 - Portable — the entire database is one file, easy to backup
 - Upgradeable — SQLAlchemy ORM means switching to Postgres is a config change, not a rewrite
 
-## Architecture
+## Architecture — Actual Flow
 
+### 1. Trend Discovery
 ```
-                          ┌──────────────┐
-                          │   NewsAPI     │
-                          │  (Finance)   │
-                          └──────┬───────┘
-                                 │ headlines
-                                 ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                         FastAPI Application                         │
-│                                                                     │
-│  ┌─────────────────────── API Layer ──────────────────────────┐    │
-│  │                                                             │    │
-│  │  /trends      /scripts     /calendar    /youtube    /auth   │    │
-│  │  /feedback    /lineage     /comments    /ui                 │    │
-│  │                                                             │    │
-│  └─────────────────────────────────────────────────────────────┘    │
-│         │               │                │                          │
-│         ▼               ▼                ▼                          │
-│  ┌────────────┐  ┌────────────┐  ┌─────────────┐                  │
-│  │  Trend     │  │  Script    │  │  YouTube    │                  │
-│  │  Suggester │  │  Generator │  │  OAuth2     │                  │
-│  │            │  │            │  │             │                  │
-│  │  Score &   │  │  5 angles  │  │  Upload     │                  │
-│  │  rank news │  │  per brief │  │  Analytics  │                  │
-│  └────────────┘  └─────┬──────┘  └──────┬──────┘                  │
-│                        │                 │                          │
-│                        │    ┌────────────┘                          │
-│                        ▼    ▼                                       │
-│               ┌──────────────────┐                                  │
-│               │  Feedback Loop   │◄──── scores propagate:          │
-│               │                  │      Upload → Script → Brief    │
-│               │  Top 3 winners   │           → Trend               │
-│               │  Bottom 3 losers │                                  │
-│               │       │          │                                  │
-│               │       ▼          │                                  │
-│               │  Injected into   │                                  │
-│               │  next AI prompt  │                                  │
-│               └──────────────────┘                                  │
-│                        │                                            │
-│         ┌──────────────┼──────────────┐                            │
-│         ▼              ▼              ▼                             │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐                     │
-│  │  Lineage   │ │  Insights  │ │  Comment   │                     │
-│  │  Graph     │ │  Heatmap   │ │  AI Reply  │                     │
-│  │            │ │            │ │            │                     │
-│  │  Trend →   │ │  Angle x   │ │  Suggested │                     │
-│  │  Brief →   │ │  Hook perf │ │  responses │                     │
-│  │  Script →  │ │  matrix    │ │            │                     │
-│  │  Upload    │ │            │ │            │                     │
-│  └────────────┘ └────────────┘ └────────────┘                     │
-│                                                                     │
-│  ┌─────────────────── Data Layer ─────────────────────────────┐    │
-│  │                                                             │    │
-│  │  SQLite + SQLAlchemy ORM                                    │    │
-│  │                                                             │    │
-│  │  Teams │ Trends │ Briefs │ Scripts │ Beats │ Templates      │    │
-│  │  Uploads │ Analytics │ Comments │ Scheduled Posts            │    │
-│  │                                                             │    │
-│  └─────────────────────────────────────────────────────────────┘    │
-│                                                                     │
-│  ┌─────────────────── Background Jobs ────────────────────────┐    │
-│  │  APScheduler                                                │    │
-│  │  ┌─────────────────┐  ┌──────────────┐  ┌──────────────┐  │    │
-│  │  │ Fetch Analytics │  │ Auto-Upload  │  │ Score Update │  │    │
-│  │  │ every 6 hours   │  │ every 1 min  │  │ after fetch  │  │    │
-│  │  └─────────────────┘  └──────────────┘  └──────────────┘  │    │
-│  └─────────────────────────────────────────────────────────────┘    │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-         │                                          │
-         ▼                                          ▼
-┌──────────────┐                          ┌──────────────┐
-│  YouTube     │                          │  Groq /      │
-│  Data API v3 │                          │  Gemini AI   │
-└──────────────┘                          └──────────────┘
+NewsAPI (finance headlines)
+        │
+        ▼
+┌────────────────┐         ┌────────────┐
+│ Trend Suggester │────────►│ Groq /     │
+│                 │◄────────│ Gemini AI  │
+│ "Score these    │         │            │
+│  headlines 0-100│         │ Returns:   │
+│  + suggest      │         │ keyword,   │
+│  brief ideas"   │         │ score,     │
+└────────┬────────┘         │ brief idea │
+         │                  └────────────┘
+         ▼
+   TrendSuggestions
+   saved to DB
+```
+
+### 2. Script Generation (with feedback loop baked in)
+```
+User picks a trend/brief
+         │
+         ▼
+┌─────────────────────────────────────────────────┐
+│              Script Generator                    │
+│                                                  │
+│  1. Pull top 3 + bottom 3 scripts from DB       │
+│     by performance score                         │
+│                                                  │
+│  2. Build prompt:                                │
+│     ┌──────────────────────────────────────┐    │
+│     │ BRIEF: "Why FDs beat stocks in 2026" │    │
+│     │                                      │    │
+│     │ PAST TOP PERFORMERS (copy these):    │    │
+│     │ - contrarian/bold_claim  score:3.7M  │    │
+│     │ - storytelling/statistic score:2.6M  │    │
+│     │                                      │    │
+│     │ WORST PERFORMERS (avoid these):      │    │
+│     │ - educational/question   score:1.2K  │    │
+│     │                                      │    │
+│     │ Generate 5 scripts, each with        │    │
+│     │ different angle × hook × CTA         │    │
+│     └──────────────────────────┬───────────┘    │
+│                                │                 │
+│                                ▼                 │
+│                        ┌────────────┐            │
+│                        │ Groq /     │            │
+│                        │ Gemini AI  │            │
+│                        └──────┬─────┘            │
+│                               │                  │
+│  3. Save to DB:               ▼                  │
+│     ContentBrief ──► 5 Scripts ──► Beats per     │
+│                      (each with    script        │
+│                       angle,                     │
+│                       hook_type,                 │
+│                       voiceover,                 │
+│                       visuals)                   │
+└─────────────────────────────────────────────────┘
+```
+
+### 3. Upload & Scheduling
+```
+User records video
+         │
+         ├──► Direct Upload ──► YouTube Data API v3 ──► video live
+         │                          (OAuth2)
+         │
+         └──► Schedule Post ──► Calendar DB
+                                    │
+                          APScheduler (every 1 min)
+                                    │
+                                    ▼
+                           Due? ──► YouTube Upload
+```
+
+### 4. Feedback Loop (closes the circle)
+```
+APScheduler (every 6 hours)
+         │
+         ▼
+┌──────────────────┐
+│ Fetch Analytics  │──► YouTube Data API
+│                  │◄── views, likes, comments, CTR, watch time
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Score Propagation│
+│                  │
+│  Upload gets analytics
+│       │
+│       ▼
+│  Script.score = views + (likes × 10) + (comments × 20)
+│       │
+│       ▼
+│  Trend.score = SUM(all script scores under its briefs)
+│       │
+│       ▼
+│  DB updated ──► Next script generation sees new top/bottom
+│                 performers ──► AI adapts its output
+└──────────────────┘
+
+The loop:  Generate ──► Upload ──► Analytics ──► Score ──► Feedback ──┐
+              ▲                                                        │
+              └────────────────────────────────────────────────────────┘
+```
+
+### 5. Visualization Layer
+```
+All data from above feeds into:
+
+  Lineage Graph ── traces: Trend → Brief → Script → Upload
+                   (interactive, click-to-explore)
+
+  Insights Page ── Angle × Hook heatmap
+                   (which combos drive engagement)
+
+  Dashboard ────── stats, recent briefs, trends
+                   (team-scoped view)
+```
+
+### Infrastructure
+```
+┌────────────────────────────────────────┐
+│  Docker Container                      │
+│                                        │
+│  FastAPI (uvicorn)                     │
+│  SQLite (file: data/content.db)        │
+│  APScheduler (in-process cron)         │
+│  Static files (CSS served directly)    │
+│                                        │
+│  External calls:                       │
+│  ├── Groq/Gemini (script generation)   │
+│  ├── YouTube Data API (upload/analytics)│
+│  └── NewsAPI (trend headlines)         │
+└────────────────────────────────────────┘
 ```
 
 ## Data Model
