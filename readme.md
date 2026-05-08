@@ -308,16 +308,22 @@ docker compose up --build
 | GET | `/lineage/{type}/{id}` | Get content lineage graph |
 | GET | `/` | Dashboard |
 
+## Screenshots
 
-Dashboard
-<img width="1186" height="888" alt="Screenshot 2026-05-08 at 2 47 59 PM" src="https://github.com/user-attachments/assets/caa2fe66-f369-42d2-be41-37ef216bf90d" />
-Generated Scripts
-<img width="1186" height="888" alt="Screenshot 2026-05-08 at 2 48 35 PM" src="https://github.com/user-attachments/assets/6d9eecec-402e-48e4-baa6-5fa11b3078cc" />
-Calendar for content scheduling
-<img width="1186" height="888" alt="Screenshot 2026-05-08 at 2 49 10 PM" src="https://github.com/user-attachments/assets/1a47ac25-3347-4011-b433-9aefdeef957d" />
-Ai generated replies for comment
-<img width="1186" height="888" alt="Screenshot 2026-05-08 at 2 49 53 PM" src="https://github.com/user-attachments/assets/6898cf84-a3ce-496d-95ed-667ea2711528" />
-Insight of what is working 
-<img width="1186" height="888" alt="Screenshot 2026-05-08 at 2 50 33 PM" src="https://github.com/user-attachments/assets/afae9e1e-94d6-473f-9939-0641b0d10b5d" />
-Lineage helps in analytics
-<img width="1186" height="888" alt="Screenshot 2026-05-08 at 2 51 07 PM" src="https://github.com/user-attachments/assets/ccd9f5f7-7290-4f93-883d-ed7a97ec4432" />
+### Dashboard — Team-scoped overview with stats and recent activity
+<img width="1186" height="888" alt="Dashboard" src="https://github.com/user-attachments/assets/caa2fe66-f369-42d2-be41-37ef216bf90d" />
+
+### Script Generation — 5 AI-generated variants with different angles and hooks
+<img width="1186" height="888" alt="Script Generation" src="https://github.com/user-attachments/assets/6d9eecec-402e-48e4-baa6-5fa11b3078cc" />
+
+### Content Calendar — Schedule posts to specific dates and times
+<img width="1186" height="888" alt="Content Calendar" src="https://github.com/user-attachments/assets/1a47ac25-3347-4011-b433-9aefdeef957d" />
+
+### AI Comment Replies — Suggested responses for YouTube comments
+<img width="1186" height="888" alt="AI Comment Replies" src="https://github.com/user-attachments/assets/6898cf84-a3ce-496d-95ed-667ea2711528" />
+
+### Performance Insights — Angle x Hook heatmap showing what actually works
+<img width="1186" height="888" alt="Performance Insights" src="https://github.com/user-attachments/assets/afae9e1e-94d6-473f-9939-0641b0d10b5d" />
+
+### Content Lineage — Trace content from trend to upload with performance data
+<img width="1186" height="888" alt="Content Lineage" src="https://github.com/user-attachments/assets/ccd9f5f7-7290-4f93-883d-ed7a97ec4432" />
