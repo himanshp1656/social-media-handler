@@ -155,32 +155,32 @@ User records video
 ### 4. Feedback Loop (closes the circle)
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    APScheduler (every 6 hours)                   │
-│                                                                  │
-│  ┌──────────────────┐       ┌─────────────────────┐            │
+│                    APScheduler (every 6 hours)                  │
+│                                                                 │
+│  ┌──────────────────┐       ┌─────────────────────┐             │
 │  │  Fetch Analytics │──────►│  YouTube Data API    │            │
 │  │                  │◄──────│                      │            │
 │  └────────┬─────────┘       │  Returns per video:  │            │
 │           │                 │  views, likes,       │            │
 │           │                 │  comments, CTR,      │            │
 │           │                 │  watch time          │            │
-│           │                 └─────────────────────┘            │
+│           │                 └─────────────────────┘             │
 │           ▼                                                     │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                   Score Propagation                      │   │
-│  │                                                          │   │
-│  │  Step 1:  Upload ← analytics (views, likes, comments)   │   │
-│  │                                                          │   │
-│  │  Step 2:  Script.score = views + likes×10 + comments×20 │   │
-│  │           (aggregated across all uploads per script)     │   │
-│  │                                                          │   │
-│  │  Step 3:  Trend.score = SUM of all script scores        │   │
-│  │           across all briefs linked to that trend         │   │
-│  │                                                          │   │
-│  │  Step 4:  DB updated with new scores                     │   │
-│  └──────────────────────────┬──────────────────────────────┘   │
-│                              │                                   │
-└──────────────────────────────┼───────────────────────────────────┘
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                   Score Propagation                     │    │
+│  │                                                         │    │
+│  │  Step 1:  Upload ← analytics (views, likes, comments)   │    │
+│  │                                                         │    │
+│  │  Step 2:  Script.score = views + likes×10 + comments×20 │    │
+│  │           (aggregated across all uploads per script)    │    │
+│  │                                                         │    │
+│  │  Step 3:  Trend.score = SUM of all script scores        │    │
+│  │           across all briefs linked to that trend        │    │
+│  │                                                         │    │
+│  │  Step 4:  DB updated with new scores                    │    │
+│  └──────────────────────────┬──────────────────────────────┘    │
+│                              │                                  |
+└──────────────────────────────┼───────────────────────────────────
                                │
                                ▼
                 ┌──────────────────────────┐
@@ -307,3 +307,17 @@ docker compose up --build
 | GET | `/feedback/scores` | Get script performance rankings |
 | GET | `/lineage/{type}/{id}` | Get content lineage graph |
 | GET | `/` | Dashboard |
+
+
+Dashboard
+<img width="1186" height="888" alt="Screenshot 2026-05-08 at 2 47 59 PM" src="https://github.com/user-attachments/assets/caa2fe66-f369-42d2-be41-37ef216bf90d" />
+Generated Scripts
+<img width="1186" height="888" alt="Screenshot 2026-05-08 at 2 48 35 PM" src="https://github.com/user-attachments/assets/6d9eecec-402e-48e4-baa6-5fa11b3078cc" />
+Calendar for content scheduling
+<img width="1186" height="888" alt="Screenshot 2026-05-08 at 2 49 10 PM" src="https://github.com/user-attachments/assets/1a47ac25-3347-4011-b433-9aefdeef957d" />
+Ai generated replies for comment
+<img width="1186" height="888" alt="Screenshot 2026-05-08 at 2 49 53 PM" src="https://github.com/user-attachments/assets/6898cf84-a3ce-496d-95ed-667ea2711528" />
+Insight of what is working 
+<img width="1186" height="888" alt="Screenshot 2026-05-08 at 2 50 33 PM" src="https://github.com/user-attachments/assets/afae9e1e-94d6-473f-9939-0641b0d10b5d" />
+Lineage helps in analytics
+<img width="1186" height="888" alt="Screenshot 2026-05-08 at 2 51 07 PM" src="https://github.com/user-attachments/assets/ccd9f5f7-7290-4f93-883d-ed7a97ec4432" />
