@@ -11,7 +11,7 @@
 </head>
 <body>
   <div class="auth-page">
-    <div class="auth-card">
+    <div class="auth-card" style="max-width: 480px;">
       <div class="auth-brand">
         <h1>ScriptLab</h1>
         <span>AI Content Engine</span>
@@ -21,7 +21,35 @@
       <div class="auth-error">{{ error }}</div>
       {% endif %}
 
-      <form method="POST" action="/auth/signup" class="auth-form">
+      <!-- Step 1: Choose account type -->
+      <div id="stepType" class="signup-step">
+        <p style="text-align:center; color:var(--text-muted); margin-bottom:20px; font-size:14px;">How will you use ScriptLab?</p>
+        <div style="display:flex; gap:12px;">
+          <button type="button" class="auth-type-card" onclick="selectType('individual')" id="btnIndividual">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <strong>Individual</strong>
+            <span>Just me, creating content solo</span>
+          </button>
+          <button type="button" class="auth-type-card" onclick="selectType('team')" id="btnTeam">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <strong>Team</strong>
+            <span>Create a team for my organization</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Account details -->
+      <form method="POST" action="/auth/signup" class="auth-form" id="signupForm" style="display:none;">
+        <input type="hidden" name="account_type" id="accountType" value="individual">
+
+        <div id="teamFields" style="display:none;">
+          <div class="form-group">
+            <label for="team_name">Team Name</label>
+            <input type="text" id="team_name" name="team_name" placeholder="e.g. YouTube Team, Instagram Squad">
+          </div>
+          <hr style="border:none; border-top:1px solid var(--border); margin:16px 0;">
+        </div>
+
         <div class="form-group">
           <label for="display_name">Display Name</label>
           <input type="text" id="display_name" name="display_name" required placeholder="Your name" autocomplete="name">
@@ -34,11 +62,80 @@
           <label for="password">Password</label>
           <input type="password" id="password" name="password" required placeholder="Min 6 characters" autocomplete="new-password">
         </div>
-        <button type="submit" class="btn btn-primary auth-btn">Sign up</button>
+        <button type="submit" class="btn btn-primary auth-btn">
+          <span id="submitLabel">Sign up</span>
+        </button>
+        <button type="button" class="btn btn-secondary auth-btn" onclick="goBack()" style="margin-top:8px;">Back</button>
       </form>
 
       <p class="auth-switch">Already have an account? <a href="/auth/login">Log in</a></p>
     </div>
   </div>
+
+  <style>
+    .auth-type-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 24px 16px;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .auth-type-card:hover {
+      border-color: var(--accent);
+      background: var(--bg-surface);
+    }
+    .auth-type-card strong {
+      font-size: 16px;
+      color: var(--text);
+    }
+    .auth-type-card span {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .auth-type-card svg {
+      color: var(--accent);
+    }
+    .signup-step {
+      margin-bottom: 16px;
+    }
+  </style>
+
+  <script>
+    function selectType(type) {
+      document.getElementById('accountType').value = type;
+      document.getElementById('stepType').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'block';
+
+      if (type === 'team') {
+        document.getElementById('teamFields').style.display = 'block';
+        document.getElementById('team_name').required = true;
+        document.getElementById('submitLabel').textContent = 'Create Team & Sign up';
+      } else {
+        document.getElementById('teamFields').style.display = 'none';
+        document.getElementById('team_name').required = false;
+        document.getElementById('submitLabel').textContent = 'Sign up';
+      }
+    }
+
+    function goBack() {
+      document.getElementById('stepType').style.display = 'block';
+      document.getElementById('signupForm').style.display = 'none';
+    }
+
+    {% if error %}
+    // If there's an error, show the form directly
+    const savedType = '{{ account_type|default("individual") }}';
+    selectType(savedType);
+    {% endif %}
+  </script>
 </body>
 </html>

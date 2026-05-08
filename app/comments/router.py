@@ -41,8 +41,8 @@ def fetch_comments(upload_id: str, db: Session = Depends(get_db), user: User = D
         .all()
     )
 
-    # Paginate through comments (cap at 500 to avoid runaway fetches)
-    max_comments = 500
+    # Paginate through comments (cap at 10 to avoid runaway fetches)
+    max_comments = 10
     saved = 0
     total_fetched = 0
     page_token = None
@@ -52,7 +52,7 @@ def fetch_comments(upload_id: str, db: Session = Depends(get_db), user: User = D
             request = youtube.commentThreads().list(
                 part="snippet",
                 videoId=upload.youtube_video_id,
-                maxResults=100,
+                maxResults=10,
                 order="relevance",
                 pageToken=page_token,
             )
@@ -83,7 +83,7 @@ def fetch_comments(upload_id: str, db: Session = Depends(get_db), user: User = D
                 break
     except HttpError as e:
         if "insufficientPermissions" in str(e) or "403" in str(e):
-            return {"error": "Insufficient YouTube permissions. Delete data/youtube-token.json and re-authenticate to grant comment access."}
+            return {"error": "Insufficient YouTube permissions. Re-authenticate via /youtube/auth to grant comment access."}
         return {"error": f"YouTube API error: {str(e)[:200]}"}
     except Exception as e:
         return {"error": f"Failed to fetch comments: {str(e)[:200]}"}

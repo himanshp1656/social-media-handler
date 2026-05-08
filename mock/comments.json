@@ -1,0 +1,56 @@
+[
+  {
+    "id": "comment_1",
+    "upload_id": "upload_rbi_contrarian",
+    "youtube_comment_id": "Ugz1abc123",
+    "author": "Rajesh Kumar",
+    "comment_text": "Finally someone saying the truth about rate cuts. My company already froze hiring.",
+    "suggested_reply": "Exactly Rajesh. Rate cuts are a signal, not a celebration. Build your emergency fund first, then think about investing the EMI savings.",
+    "status": "approved"
+  },
+  {
+    "id": "comment_2",
+    "upload_id": "upload_rbi_contrarian",
+    "youtube_comment_id": "Ugz2def456",
+    "author": "Sneha Patel",
+    "comment_text": "But isn't lower EMI good for us? Why are you being so negative?",
+    "suggested_reply": "Lower EMI is great! But understanding WHY rates are being cut helps you make smarter decisions. Use the savings to prepay principal instead of spending more.",
+    "status": "pending"
+  },
+  {
+    "id": "comment_3",
+    "upload_id": "upload_gold_fear",
+    "youtube_comment_id": "Ugz3ghi789",
+    "author": "Amit Singh",
+    "comment_text": "I bought 50gm at 78,000 last month. Already up 9%. You were wrong.",
+    "suggested_reply": "Happy for your gains Amit! But remember, gold went from 32K to 26K in 2013 after hitting ATH. The key is allocation — keep gold at 10-15% of portfolio max, not your entire investment.",
+    "status": "pending"
+  },
+  {
+    "id": "comment_4",
+    "upload_id": "upload_gold_fear",
+    "youtube_comment_id": "Ugz4jkl012",
+    "author": "Priya M",
+    "comment_text": "What about Sovereign Gold Bonds? Still worth it?",
+    "suggested_reply": "SGBs are the best way to own gold — you get 2.5% annual interest plus gold price appreciation, and zero tax on maturity gains. But new issuances have slowed, so check secondary market on NSE.",
+    "status": "approved"
+  },
+  {
+    "id": "comment_5",
+    "upload_id": "upload_tax_myth",
+    "youtube_comment_id": "Ugz5mno345",
+    "author": "Vikram Rao",
+    "comment_text": "My CTC is 15 lakhs. HRA is 3.6L, 80C is 1.5L, NPS is 50K. Which regime?",
+    "suggested_reply": "With 5.6L in deductions, old regime saves you roughly Rs 15,000 more than new regime at 15L CTC. But if you don't have HRA (own house), new regime wins. DM me for the exact calculation.",
+    "status": "pending"
+  },
+  {
+    "id": "comment_6",
+    "upload_id": "upload_fd_fear",
+    "youtube_comment_id": "Ugz6pqr678",
+    "author": "Meera Joshi",
+    "comment_text": "What about senior citizens? We depend on FD interest for monthly income.",
+    "suggested_reply": "Valid concern Meera. Senior citizens get extra 0.5% on FDs plus higher tax exemption (50K vs 40K under 80TTB). For you, a mix of SCSS (8.2%), PM Vaya Vandana, and FD laddering is the safest approach.",
+    "status": "approved"
+  }
+]

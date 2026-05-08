@@ -46,3 +46,8 @@ def get_current_user_api(request: Request, db: Session = Depends(get_db)) -> Use
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     return user
+
+
+def get_team_id(user: User) -> str | None:
+    """Get the user's currently active team_id (None = personal/all content)."""
+    return user.active_team_id

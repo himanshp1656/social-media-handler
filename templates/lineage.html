@@ -2,173 +2,22 @@
 {% block title %}{% if mode == 'overview' %}Content Lineage{% else %}{{ entity.type|title }} Lineage{% endif %} - Content Engine{% endblock %}
 
 {% block content %}
-{% if mode == 'overview' %}
-<!-- ===================== OVERVIEW MODE ===================== -->
-<div class="page-header">
-  <h2>Content Lineage</h2>
-  <p>Pipeline overview: how your content flows from trends to analytics</p>
-</div>
-
-<!-- Conversion Funnel -->
-<div class="lineage-funnel">
-  <div class="funnel-step">
-    <div class="funnel-icon" style="background: var(--cyan-dim); color: var(--cyan);">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-    </div>
-    <div class="funnel-value">{{ stats.funnel.trends }}</div>
-    <div class="funnel-label">Trends</div>
-  </div>
-  <div class="funnel-arrow">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-  </div>
-  <div class="funnel-step">
-    <div class="funnel-icon" style="background: var(--accent-dim); color: var(--accent);">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-    </div>
-    <div class="funnel-value">{{ stats.funnel.briefs }}</div>
-    <div class="funnel-label">Briefs</div>
-  </div>
-  <div class="funnel-arrow">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-  </div>
-  <div class="funnel-step">
-    <div class="funnel-icon" style="background: var(--green-dim); color: var(--green);">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-    </div>
-    <div class="funnel-value">{{ stats.funnel.scripts }}</div>
-    <div class="funnel-label">Scripts</div>
-  </div>
-  <div class="funnel-arrow">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-  </div>
-  <div class="funnel-step">
-    <div class="funnel-icon" style="background: var(--orange-dim); color: var(--orange);">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-    </div>
-    <div class="funnel-value">{{ stats.funnel.uploads }}</div>
-    <div class="funnel-label">Uploads</div>
-  </div>
-</div>
-
-<!-- Conversion Rates -->
-<div class="lineage-rates">
-  {% if stats.funnel.trends > 0 %}
-  <span>Trends to Briefs: <strong>{{ ((stats.funnel.briefs / stats.funnel.trends * 100) if stats.funnel.trends > 0 else 0) | round(0) | int }}%</strong></span>
-  {% endif %}
-  {% if stats.funnel.briefs > 0 %}
-  <span>Briefs to Scripts: <strong>{{ ((stats.funnel.scripts / stats.funnel.briefs * 100) if stats.funnel.briefs > 0 else 0) | round(0) | int }}%</strong></span>
-  {% endif %}
-  {% if stats.funnel.scripts > 0 %}
-  <span>Scripts Uploaded: <strong>{{ ((stats.funnel.uploads / stats.funnel.scripts * 100) if stats.funnel.scripts > 0 else 0) | round(0) | int }}%</strong></span>
-  {% endif %}
-</div>
-
-<!-- Path Comparison Cards -->
-<div class="lineage-grid">
-  <div class="card lineage-compare-card">
-    <h4>Trend-Sourced vs Manual</h4>
-    <div class="compare-row">
-      <div class="compare-col">
-        <div class="compare-label" style="color: var(--cyan);">Trend-Sourced</div>
-        <div class="compare-stat">{{ stats.trend_sourced.count }} scripts</div>
-        <div class="compare-detail">Avg Score: <strong>{{ stats.trend_sourced.avg_score }}</strong></div>
-        <div class="compare-detail">Uploaded: <strong>{{ stats.trend_sourced.uploaded }}</strong></div>
-      </div>
-      <div class="compare-divider"></div>
-      <div class="compare-col">
-        <div class="compare-label" style="color: var(--text-dim);">Manual</div>
-        <div class="compare-stat">{{ stats.manual.count }} scripts</div>
-        <div class="compare-detail">Avg Score: <strong>{{ stats.manual.avg_score }}</strong></div>
-        <div class="compare-detail">Uploaded: <strong>{{ stats.manual.uploaded }}</strong></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card lineage-compare-card">
-    <h4>Template vs Freeform</h4>
-    <div class="compare-row">
-      <div class="compare-col">
-        <div class="compare-label" style="color: var(--yellow);">Template-Based</div>
-        <div class="compare-stat">{{ stats.template_based.count }} scripts</div>
-        <div class="compare-detail">Avg Score: <strong>{{ stats.template_based.avg_score }}</strong></div>
-        <div class="compare-detail">Uploaded: <strong>{{ stats.template_based.uploaded }}</strong></div>
-      </div>
-      <div class="compare-divider"></div>
-      <div class="compare-col">
-        <div class="compare-label" style="color: var(--text-dim);">Freeform</div>
-        <div class="compare-stat">{{ stats.freeform.count }} scripts</div>
-        <div class="compare-detail">Avg Score: <strong>{{ stats.freeform.avg_score }}</strong></div>
-        <div class="compare-detail">Uploaded: <strong>{{ stats.freeform.uploaded }}</strong></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Top Performing Tables -->
-<div class="lineage-grid">
-  <div class="card">
-    <h4 style="margin-bottom: 12px;">Top Performing Trends</h4>
-    {% if stats.top_trends %}
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Keyword</th><th>Briefs</th><th>Total Score</th><th></th></tr>
-        </thead>
-        <tbody>
-          {% for t in stats.top_trends %}
-          <tr>
-            <td style="font-weight: 500;">{{ t.keyword }}</td>
-            <td>{{ t.brief_count }}</td>
-            <td>{{ t.total_score }}</td>
-            <td><a href="/ui/lineage/trend/{{ t.id }}" class="btn btn-sm btn-secondary">Lineage</a></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <p style="color: var(--text-dim); font-size: 13px;">No trend-sourced content yet</p>
-    {% endif %}
-  </div>
-
-  <div class="card">
-    <h4 style="margin-bottom: 12px;">Top Performing Templates</h4>
-    {% if stats.top_templates %}
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Template</th><th>Scripts</th><th>Avg Score</th><th></th></tr>
-        </thead>
-        <tbody>
-          {% for t in stats.top_templates %}
-          <tr>
-            <td style="font-weight: 500;">{{ t.name }}</td>
-            <td>{{ t.script_count }}</td>
-            <td>{{ t.avg_score }}</td>
-            <td><a href="/ui/lineage/template/{{ t.id }}" class="btn btn-sm btn-secondary">Lineage</a></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <p style="color: var(--text-dim); font-size: 13px;">No templates used yet</p>
-    {% endif %}
-  </div>
-</div>
-
+{% if false %}
+<!-- overview mode is now handled by entity mode with scriptlab root -->
 {% else %}
 <!-- ===================== ENTITY MODE — HORIZONTAL GRAPH ===================== -->
 
 <!-- Info bar -->
 <div class="lg-info-bar">
+  {% if entity.type != 'scriptlab' %}
   <a href="/ui/lineage/overview" class="lg-back-link">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg>
     Overview
   </a>
   <span class="lg-divider">|</span>
-  <span class="lg-type-pill lg-type-{{ entity.type }}">{{ entity.type }}</span>
-  <span class="lg-info-label">{{ entity.label }}</span>
+  {% endif %}
+  <span class="lg-type-pill lg-type-{{ entity.type }}">{% if entity.type == 'scriptlab' %}Content Lineage{% elif entity.type == 'upload' %}{% if 'instagram' in (entity.platform|default('youtube_shorts'))|lower %}Insta Linked{% else %}YouTube Linked{% endif %}{% else %}{{ entity.type }}{% endif %}</span>
+  <span class="lg-info-label">{% if entity.type == 'scriptlab' %}Full pipeline view{% else %}{{ entity.label }}{% endif %}</span>
   <span class="lg-divider">|</span>
   <span class="lg-info-counts">
     <span style="color: var(--cyan);">{{ upstream|length }} upstream</span>
@@ -239,6 +88,7 @@
     font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
     padding: 2px 10px; border-radius: 10px; white-space: nowrap;
   }
+  .lg-type-scriptlab { background: var(--accent-dim); color: var(--accent); }
   .lg-type-trend { background: var(--cyan-dim); color: var(--cyan); }
   .lg-type-brief { background: var(--accent-dim); color: var(--accent); }
   .lg-type-script { background: var(--green-dim); color: var(--green); }
@@ -309,6 +159,8 @@
   }
   .lg-node:hover { transform: translateY(-2px); }
   .lg-node.lg-node-selected { border-color: var(--accent) !important; box-shadow: 0 0 0 2px var(--accent), 0 4px 20px rgba(124,108,240,0.2); }
+  .lg-node-scriptlab { border-left: 3px solid var(--accent); }
+  .lg-node-scriptlab:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(124,108,240,0.15); }
   .lg-node-trend { border-left: 3px solid var(--cyan); }
   .lg-node-trend:hover { border-color: var(--cyan); box-shadow: 0 4px 20px rgba(34,211,238,0.15); }
   .lg-node-brief { border-left: 3px solid var(--accent); }
@@ -441,6 +293,7 @@
 <script>
 const LINEAGE = {{ lineage_json | safe }};
 const TYPE_COLORS = {
+  scriptlab: { color: 'var(--accent)', bg: 'rgba(124,108,240,0.15)' },
   trend: { color: 'var(--cyan)', bg: 'rgba(34,211,238,0.15)' },
   brief: { color: 'var(--accent)', bg: 'rgba(124,108,240,0.15)' },
   script: { color: 'var(--green)', bg: 'rgba(52,211,153,0.15)' },
@@ -448,6 +301,18 @@ const TYPE_COLORS = {
   analytics: { color: 'var(--pink)', bg: 'rgba(244,114,182,0.15)' },
   template: { color: 'var(--yellow)', bg: 'rgba(251,191,36,0.15)' },
 };
+
+function uploadLabel(node) {
+  if (node.type !== 'upload') return node.type;
+  const p = (node.platform || '').toLowerCase();
+  if (p.includes('instagram')) return 'Insta Linked';
+  return 'YouTube Linked';
+}
+
+function nodeTypeLabel(node) {
+  if (node.type === 'upload') return uploadLabel(node);
+  return node.type;
+}
 
 // ---- Build full graph data from API response ----
 // allNodes: id -> node data (flat map)
@@ -510,12 +375,18 @@ const rootId = LINEAGE.root.id;
 
 function initVisibility() {
   expandedNodes.clear();
-  expandedNodes.add(rootId);
-  // Show root's direct upstream parents and downstream children
-  allEdges.forEach(e => {
-    if (e.toId === rootId) expandedNodes.add(e.fromId);   // upstream parent
-    if (e.fromId === rootId) expandedNodes.add(e.toId);    // downstream child
-  });
+  if (LINEAGE.root.type === 'scriptlab') {
+    // Show only root + direct briefs, collapsed
+    expandedNodes.add(rootId);
+    (nodeChildren[rootId] || []).forEach(id => expandedNodes.add(id));
+  } else {
+    expandedNodes.add(rootId);
+    // Show root's direct upstream parents and downstream children
+    allEdges.forEach(e => {
+      if (e.toId === rootId) expandedNodes.add(e.fromId);   // upstream parent
+      if (e.fromId === rootId) expandedNodes.add(e.toId);    // downstream child
+    });
+  }
 }
 initVisibility();
 
@@ -624,18 +495,7 @@ function renderGraph() {
     const colEl = document.createElement('div');
     colEl.className = 'lg-column';
 
-    if (col.nodes.length > 0) {
-      const lbl = document.createElement('div');
-      lbl.className = 'lg-col-label';
-      const t = col.nodes[0]?.type || col.label;
-      const tc = TYPE_COLORS[t] || { color: 'var(--text-dim)', bg: 'rgba(255,255,255,0.05)' };
-      lbl.style.color = tc.color;
-      lbl.style.background = tc.bg;
-      lbl.style.border = '1px solid ' + tc.color + '25';
-      const plural = col.nodes.length > 1 ? 's' : '';
-      lbl.textContent = t + plural + ' (' + col.nodes.length + ')';
-      colEl.appendChild(lbl);
-    }
+    if (false) { /* column labels removed */ }
 
     col.nodes.forEach(node => {
       if (node.id === rootId) {
@@ -663,7 +523,7 @@ function renderCenterCard(node) {
   const totalDown = children.length;
 
   el.innerHTML = `
-    <div class="lg-type-pill lg-type-${node.type}" style="margin-bottom: 8px;">${node.type}</div>
+    <div class="lg-type-pill lg-type-${node.type}" style="margin-bottom: 8px;">${nodeTypeLabel(node)}</div>
     <div class="lg-center-title">${esc(node.label)}</div>
     <div class="lg-center-meta">${centerMeta(node)}</div>
     <div class="lg-center-counts">
@@ -681,15 +541,22 @@ function renderNodeCard(node) {
   el.onclick = () => openSidebar(node.id);
 
   let badges = '';
-  if (node.type === 'script') {
+  if (node.type === 'brief') {
+    if (node.total_score) badges += `<span class="lg-node-badge" style="border-color:var(--yellow);color:var(--yellow);">Score: ${fmtNum(node.total_score)}</span>`;
+  } else if (node.type === 'script') {
     if (node.angle) badges += `<span class="lg-node-badge" style="border-color:var(--green);color:var(--green);">${esc((node.angle||'').replace('_',' '))}</span>`;
     if (node.hook_type) badges += `<span class="lg-node-badge" style="border-color:var(--accent);color:var(--accent);">${esc(node.hook_type)}</span>`;
     if (node.score) badges += `<span class="lg-node-badge" style="border-color:var(--yellow);color:var(--yellow);">Score: ${fmtNum(node.score)}</span>`;
   } else if (node.type === 'upload') {
     badges += `<span class="lg-node-badge" style="border-color:var(--orange);color:var(--orange);">${esc(node.status)}</span>`;
-  } else if (node.type === 'analytics') {
-    badges += `<span class="lg-node-badge" style="border-color:var(--pink);color:var(--pink);">${node.views} views</span>`;
+    if (node.views) badges += `<span class="lg-node-badge" style="border-color:var(--pink);color:var(--pink);">${fmtNum(node.views)} views</span>`;
+    if (node.likes) badges += `<span class="lg-node-badge" style="border-color:var(--green);color:var(--green);">${fmtNum(node.likes)} likes</span>`;
     if (node.ctr) badges += `<span class="lg-node-badge" style="border-color:var(--cyan);color:var(--cyan);">CTR ${node.ctr}%</span>`;
+    if (node.watch_time_minutes) badges += `<span class="lg-node-badge" style="border-color:var(--orange);color:var(--orange);">${fmtNum(node.watch_time_minutes)}m watch</span>`;
+    if (node.views > 0) {
+      const eng = ((node.likes + node.comments) / node.views * 100).toFixed(1);
+      badges += `<span class="lg-node-badge" style="border-color:var(--green);color:var(--green);">${eng}% eng.</span>`;
+    }
   } else if (node.type === 'trend') {
     if (node.source) badges += `<span class="lg-node-badge" style="border-color:var(--cyan);color:var(--cyan);">${esc(node.source)}</span>`;
     if (node.score) badges += `<span class="lg-node-badge" style="border-color:var(--yellow);color:var(--yellow);">Score: ${fmtNum(node.score)}</span>`;
@@ -713,7 +580,7 @@ function renderNodeCard(node) {
 
   el.innerHTML = `
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-      <span class="lg-type-pill lg-type-${node.type}" style="font-size:9px;">${node.type}</span>
+      <span class="lg-type-pill lg-type-${node.type}" style="font-size:9px;">${nodeTypeLabel(node)}</span>
     </div>
     <div class="lg-node-title">${esc(node.label)}</div>
     <div class="lg-node-meta">${nodeMeta(node)}</div>
@@ -724,6 +591,10 @@ function renderNodeCard(node) {
 }
 
 function centerMeta(node) {
+  if (node.type === 'scriptlab') {
+    const briefCount = (nodeChildren[node.id] || []).length;
+    return briefCount + ' briefs';
+  }
   if (node.type === 'brief') return 'Topic: ' + esc(node.topic || '');
   if (node.type === 'script') return esc((node.angle||'').replace('_',' ')) + ' + ' + esc(node.hook_type||'') + ' &middot; Score: ' + fmtNum(node.score||0);
   if (node.type === 'trend') return 'Source: ' + esc(node.source||'') + ' &middot; Score: ' + fmtNum(node.score||0);
@@ -732,10 +603,9 @@ function centerMeta(node) {
 }
 
 function nodeMeta(node) {
-  if (node.type === 'brief') return esc(node.topic || '');
+  if (node.type === 'brief') return esc(node.topic || '') + (node.total_score ? ' &middot; Score: ' + fmtNum(node.total_score) : '');
   if (node.type === 'script') return esc((node.angle||'').replace('_',' ')) + ' + ' + esc(node.hook_type||'');
-  if (node.type === 'upload') return esc(node.label || '');
-  if (node.type === 'analytics') return node.likes + ' likes &middot; ' + node.comments + ' comments';
+  if (node.type === 'upload') return esc(node.label || '') + (node.views ? ' &middot; ' + fmtNum(node.views) + ' views' : '');
   if (node.type === 'trend') return esc((node.brief||'').slice(0, 60));
   if (node.type === 'template') return esc((node.angle||'').replace('_',' '));
   return '';
@@ -922,7 +792,7 @@ function openSidebar(nodeId) {
   if (el) el.classList.add('lg-node-selected');
 
   const tc = TYPE_COLORS[node.type] || TYPE_COLORS.brief;
-  document.getElementById('sbTitle').innerHTML = '<span class="lg-type-pill lg-type-' + node.type + '" style="margin-right:8px;">' + node.type + '</span>' + esc(node.label);
+  document.getElementById('sbTitle').innerHTML = '<span class="lg-type-pill lg-type-' + node.type + '" style="margin-right:8px;">' + nodeTypeLabel(node) + '</span>' + esc(node.label);
   document.getElementById('sbTitle').style.color = tc.color;
 
   const body = document.getElementById('sbBody');
@@ -957,7 +827,16 @@ function buildSidebarContent(node) {
   let html = '';
 
   // --- Type-specific content ---
-  if (node.type === 'trend') {
+  if (node.type === 'scriptlab') {
+    const children = nodeChildren[node.id] || [];
+    html += `<div class="sb-section">
+      <div class="sb-label">ScriptLab Overview</div>
+      <div class="sb-row"><span class="sb-row-label">Briefs</span><span class="sb-row-value" style="font-weight:600;">${children.length}</span></div>
+      <div class="sb-row"><span class="sb-row-label">Total Nodes</span><span class="sb-row-value">${Object.keys(allNodes).length}</span></div>
+    </div>`;
+  }
+
+  else if (node.type === 'trend') {
     html += `<div class="sb-section">
       <div class="sb-label">Trend Details</div>
       <div class="sb-row"><span class="sb-row-label">Keyword</span><span class="sb-row-value" style="font-weight:600;">${esc(node.label)}</span></div>
@@ -1063,7 +942,7 @@ function buildSidebarContent(node) {
 
   else if (node.type === 'upload') {
     html += `<div class="sb-section">
-      <div class="sb-label">Upload Details</div>
+      <div class="sb-label">${uploadLabel(node)} Details</div>
       <div class="sb-row"><span class="sb-row-label">Status</span><span class="sb-row-value" style="font-weight:600;color:${node.status==='uploaded'||node.status==='linked'?'var(--green)':'var(--orange)'};">${esc(node.status||'pending')}</span></div>
       <div class="sb-row"><span class="sb-row-label">Video ID</span><span class="sb-row-value">${esc(node.label||'pending')}</span></div>
     </div>`;
@@ -1076,30 +955,37 @@ function buildSidebarContent(node) {
         </a>
       </div>`;
     }
-  }
-
-  else if (node.type === 'analytics') {
-    html += `<div class="sb-section">
-      <div class="sb-label">Performance Analytics</div>
-      <div class="sb-stat-grid">
-        <div class="sb-stat-card">
-          <div class="sb-stat-val" style="color:var(--accent);">${(node.views||0).toLocaleString()}</div>
-          <div class="sb-stat-lbl">Views</div>
+    if (node.views || node.likes || node.ctr) {
+      html += `<div class="sb-section">
+        <div class="sb-label">Performance</div>
+        <div class="sb-stat-grid">
+          <div class="sb-stat-card">
+            <div class="sb-stat-val" style="color:var(--accent);">${(node.views||0).toLocaleString()}</div>
+            <div class="sb-stat-lbl">Views</div>
+          </div>
+          <div class="sb-stat-card">
+            <div class="sb-stat-val" style="color:var(--green);">${(node.likes||0).toLocaleString()}</div>
+            <div class="sb-stat-lbl">Likes</div>
+          </div>
+          <div class="sb-stat-card">
+            <div class="sb-stat-val" style="color:var(--cyan);">${(node.comments||0).toLocaleString()}</div>
+            <div class="sb-stat-lbl">Comments</div>
+          </div>
+          <div class="sb-stat-card">
+            <div class="sb-stat-val" style="color:var(--yellow);">${node.ctr||0}%</div>
+            <div class="sb-stat-lbl">CTR</div>
+          </div>
+          <div class="sb-stat-card">
+            <div class="sb-stat-val" style="color:var(--orange);">${node.watch_time_minutes||0}m</div>
+            <div class="sb-stat-lbl">Watch Time</div>
+          </div>
+          <div class="sb-stat-card">
+            <div class="sb-stat-val" style="color:var(--pink);">${node.views > 0 ? ((node.likes + node.comments) / node.views * 100).toFixed(1) : 0}%</div>
+            <div class="sb-stat-lbl">Engagement</div>
+          </div>
         </div>
-        <div class="sb-stat-card">
-          <div class="sb-stat-val" style="color:var(--green);">${(node.likes||0).toLocaleString()}</div>
-          <div class="sb-stat-lbl">Likes</div>
-        </div>
-        <div class="sb-stat-card">
-          <div class="sb-stat-val" style="color:var(--cyan);">${(node.comments||0).toLocaleString()}</div>
-          <div class="sb-stat-lbl">Comments</div>
-        </div>
-        <div class="sb-stat-card">
-          <div class="sb-stat-val" style="color:var(--yellow);">${node.ctr||0}%</div>
-          <div class="sb-stat-lbl">CTR</div>
-        </div>
-      </div>
-    </div>`;
+      </div>`;
+    }
   }
 
   else if (node.type === 'template') {
@@ -1311,33 +1197,6 @@ async function sbSubmitTemplate(e) {
   .sb-modal-box { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; width:100%; max-width:480px; }
   .sb-modal-box h3 { font-size:18px; margin-bottom:12px; }
 
-  /* ---- Overview styles (shared) ---- */
-  .lineage-funnel {
-    display: flex; align-items: center; justify-content: center; gap: 0;
-    padding: 28px 24px; background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: var(--radius); margin-bottom: 16px;
-  }
-  .funnel-step { text-align: center; min-width: 100px; }
-  .funnel-icon {
-    width: 48px; height: 48px; border-radius: 14px; display: flex;
-    align-items: center; justify-content: center; margin: 0 auto 8px;
-  }
-  .funnel-value { font-size: 28px; font-weight: 800; line-height: 1; }
-  .funnel-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-  .funnel-arrow { color: var(--text-muted); padding: 0 20px; margin-top: -20px; }
-  .lineage-rates {
-    display: flex; gap: 24px; justify-content: center;
-    margin-bottom: 24px; font-size: 13px; color: var(--text-dim);
-  }
-  .lineage-rates strong { color: var(--text); }
-  .lineage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-  .lineage-compare-card h4 { font-size: 14px; margin-bottom: 14px; color: var(--text-dim); font-weight: 600; }
-  .compare-row { display: flex; gap: 0; }
-  .compare-col { flex: 1; padding: 0 16px; }
-  .compare-divider { width: 1px; background: var(--border); }
-  .compare-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-  .compare-stat { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
-  .compare-detail { font-size: 12px; color: var(--text-dim); margin-bottom: 2px; }
-  .compare-detail strong { color: var(--text); }
+  /* ---- (overview styles moved inline above) ---- */
 </style>
 {% endblock %}

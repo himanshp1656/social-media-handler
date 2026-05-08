@@ -45,6 +45,9 @@ async def schedule_post(
 
     scheduled_dt = datetime.fromisoformat(scheduled_at).replace(tzinfo=timezone.utc)
 
+    if scheduled_dt < datetime.now(timezone.utc):
+        return {"error": "Cannot schedule in the past"}
+
     post = ScheduledPost(
         id=new_id(),
         script_id=script_id,
@@ -53,6 +56,7 @@ async def schedule_post(
         privacy_status=privacy_status,
         notes=notes,
         created_by=user.id,
+        team_id=user.active_team_id,
     )
     db.add(post)
     db.commit()
@@ -119,7 +123,10 @@ def reschedule(post_id: str, scheduled_at: str, db: Session = Depends(get_db), u
     if post.status == "posted":
         return {"error": "Already posted"}
 
-    post.scheduled_at = datetime.fromisoformat(scheduled_at).replace(tzinfo=timezone.utc)
+    new_dt = datetime.fromisoformat(scheduled_at).replace(tzinfo=timezone.utc)
+    if new_dt < datetime.now(timezone.utc):
+        return {"error": "Cannot reschedule to a past date"}
+    post.scheduled_at = new_dt
     post.status = "scheduled"
     db.commit()
     return {"id": post.id, "scheduled_at": str(post.scheduled_at), "status": post.status}

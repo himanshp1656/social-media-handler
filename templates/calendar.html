@@ -150,6 +150,8 @@
 .cal-cell:nth-child(7n) { border-right: none; }
 .cal-cell:hover { background: var(--bg-card-hover); }
 .cal-outside { opacity: 0.28; pointer-events: none; }
+.cal-past { opacity: 0.45; cursor: default; }
+.cal-past:hover { background: transparent; }
 .cal-num {
   font-size: 13px;
   font-weight: 600;
@@ -353,6 +355,12 @@ try {
 } catch(e) { CAL_DATA = {}; }
 
 let currentDate = '';
+const TODAY = new Date().toISOString().slice(0, 10);
+
+// Mark past cells on load
+document.querySelectorAll('.cal-cell').forEach(el => {
+  if (el.dataset.date < TODAY) el.classList.add('cal-past');
+});
 
 function formatDrawerDate(ds) {
   const d = new Date(ds + 'T12:00:00');
@@ -387,6 +395,14 @@ function openDay(el) {
     postsEl.innerHTML = html;
   } else {
     postsEl.innerHTML = '<div class="drawer-empty">No posts scheduled for this day</div>';
+  }
+
+  // Hide schedule form for past dates
+  const scheduleSection = document.querySelector('.drawer-section');
+  if (currentDate < TODAY) {
+    scheduleSection.style.display = 'none';
+  } else {
+    scheduleSection.style.display = '';
   }
 
   document.getElementById('drawerOverlay').classList.add('active');

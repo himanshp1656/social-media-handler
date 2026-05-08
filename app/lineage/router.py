@@ -24,12 +24,17 @@ def _script_node(s):
     return {"type": "script", "id": s.id, "label": s.title, "brief_id": s.brief_id, "angle": s.angle, "hook_type": s.hook_type, "score": s.score, "platform": s.platform, "duration": s.duration, "template_id": s.template_id}
 
 
-def _upload_node(u):
-    return {"type": "upload", "id": u.id, "label": u.youtube_video_id or "pending", "status": u.upload_status}
-
-
-def _analytics_node(a):
-    return {"type": "analytics", "id": a.id, "label": f"{a.views} views", "views": a.views, "likes": a.likes, "comments": a.comments, "ctr": a.ctr}
+def _upload_node(u, analytics=None, platform=None):
+    node = {"type": "upload", "id": u.id, "label": u.youtube_video_id or "pending", "status": u.upload_status,
+            "platform": platform or "youtube_shorts",
+            "views": 0, "likes": 0, "comments": 0, "ctr": 0, "watch_time_minutes": 0}
+    if analytics:
+        node["views"] = analytics.views or 0
+        node["likes"] = analytics.likes or 0
+        node["comments"] = analytics.comments or 0
+        node["ctr"] = analytics.ctr or 0
+        node["watch_time_minutes"] = analytics.watch_time_minutes or 0
+    return node
 
 
 def _template_node(t):
@@ -53,14 +58,13 @@ def _get_downstream_from_brief(db: Session, brief_id: str):
             if tpl:
                 node["template"] = _template_node(tpl)
 
-        # Uploads
+        # Uploads (with analytics merged in)
         uploads = db.query(Upload).filter(Upload.script_id == s.id).all()
         for u in uploads:
-            u_node = _upload_node(u)
-            u_node["children"] = []
             analytics = db.query(Analytics).filter(Analytics.upload_id == u.id).order_by(desc(Analytics.fetched_at)).first()
+            u_node = _upload_node(u, analytics, platform=s.platform)
+            u_node["children"] = []
             if analytics:
-                u_node["children"].append(_analytics_node(analytics))
                 total_views += analytics.views or 0
             node["children"].append(u_node)
 
@@ -121,11 +125,9 @@ def get_lineage(entity_type: str, entity_id: str, db: Session = Depends(get_db),
                 s_uploads = db.query(Upload).filter(Upload.script_id == s.id).all()
                 s_node["children"] = []
                 for u in s_uploads:
-                    su_node = _upload_node(u)
-                    su_node["children"] = []
                     a = db.query(Analytics).filter(Analytics.upload_id == u.id).order_by(desc(Analytics.fetched_at)).first()
-                    if a:
-                        su_node["children"].append(_analytics_node(a))
+                    su_node = _upload_node(u, a, platform=s.platform)
+                    su_node["children"] = []
                     s_node["children"].append(su_node)
                 sibling_nodes.append(s_node)
             brief_node["children"] = sibling_nodes
@@ -141,15 +143,13 @@ def get_lineage(entity_type: str, entity_id: str, db: Session = Depends(get_db),
             if tpl:
                 root["template"] = _template_node(tpl)
 
-        # Downstream: uploads + analytics
+        # Downstream: uploads (with analytics merged)
         downstream = []
         uploads = db.query(Upload).filter(Upload.script_id == script.id).all()
         for u in uploads:
-            u_node = _upload_node(u)
-            u_node["children"] = []
             analytics = db.query(Analytics).filter(Analytics.upload_id == u.id).order_by(desc(Analytics.fetched_at)).first()
-            if analytics:
-                u_node["children"].append(_analytics_node(analytics))
+            u_node = _upload_node(u, analytics, platform=script.platform)
+            u_node["children"] = []
             downstream.append(u_node)
 
         # Versions

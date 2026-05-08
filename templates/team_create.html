@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Create Team - ScriptLab{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Create a New Team</h2>
+  <p>Teams are content namespaces — all content created under a team is scoped to it.</p>
+</div>
+
+<div class="card" style="max-width: 480px;">
+  {% if error %}
+  <div class="alert alert-error" style="margin-bottom: 16px; padding: 10px 14px; background: var(--red-dim); color: var(--red); border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;">
+    {{ error }}
+  </div>
+  {% endif %}
+
+  <form method="POST" action="/ui/team/create">
+    <div class="form-group" style="margin-bottom: 20px;">
+      <label style="display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:8px;">Team Name</label>
+      <input type="text" name="team_name" required placeholder="e.g. YouTube Team, Instagram Team"
+             style="width:100%; padding:10px 14px; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px;">
+    </div>
+    <div style="display:flex; gap:12px;">
+      <button type="submit" class="btn btn-primary">Create Team</button>
+      <a href="/" class="btn" style="background:var(--bg-surface); color:var(--text-muted); border:1px solid var(--border);">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

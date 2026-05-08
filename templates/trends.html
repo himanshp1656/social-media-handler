@@ -8,9 +8,24 @@
       <h2>Trend Suggestions</h2>
       <p>AI-generated content ideas from Google Trends and finance news</p>
     </div>
-    <button class="btn btn-primary" id="fetchTrendsBtn" onclick="fetchTrends()">
-      Fetch Fresh Trends
-    </button>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-secondary" id="newsBtn" onclick="toggleNews()">
+        Browse News
+      </button>
+      <button class="btn btn-primary" id="fetchTrendsBtn" onclick="fetchTrends()">
+        Fetch Fresh Trends
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="newsPanel" class="card" style="display: none; margin-bottom: 24px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h3 style="margin: 0;">Latest Finance News</h3>
+    <button class="btn btn-sm btn-secondary" onclick="toggleNews()">&times; Close</button>
+  </div>
+  <div id="newsContent">
+    <p style="color: var(--text-muted);">Loading news...</p>
   </div>
 </div>
 
@@ -45,6 +60,8 @@
               {% if s.status == 'suggested' %}
               <a href="/ui/generate?brief={{ s.suggested_brief | urlencode }}&suggestion_id={{ s.id }}" class="btn btn-sm btn-primary" onclick="markAccepted('{{ s.id }}')">Use</a>
               <button class="btn btn-sm btn-secondary" onclick="updateStatus('{{ s.id }}', 'rejected')">Skip</button>
+              {% elif s.status in ['accepted', 'used'] %}
+              <a href="/ui/generate?brief={{ s.suggested_brief | urlencode }}&suggestion_id={{ s.id }}" class="btn btn-sm btn-primary">Use Again</a>
               {% endif %}
               {% if s.status == 'used' %}
               <a href="/ui/lineage/trend/{{ s.id }}" class="btn btn-sm btn-secondary">Lineage</a>
@@ -84,6 +101,45 @@ async function fetchTrends() {
   } finally {
     hideLoading();
     btn.disabled = false;
+  }
+}
+
+let newsLoaded = false;
+
+async function toggleNews() {
+  const panel = document.getElementById('newsPanel');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    if (!newsLoaded) {
+      try {
+        const res = await fetch('/trends/news');
+        if (!res.ok) throw new Error('Failed to fetch news');
+        const data = await res.json();
+        const container = document.getElementById('newsContent');
+        if (data.articles.length === 0) {
+          container.innerHTML = '<p style="color: var(--text-muted);">No news articles found. Check your NEWS_API_KEY.</p>';
+        } else {
+          container.innerHTML = data.articles.map(a => `
+            <div style="padding: 12px 0; border-bottom: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                <div>
+                  <strong>${a.title}</strong>
+                  <p style="margin: 4px 0; color: var(--text-muted); font-size: 0.9em;">${a.description || ''}</p>
+                  <span class="badge badge-google_trends">${a.source}</span>
+                  <span style="color: var(--text-muted); font-size: 0.85em; margin-left: 8px;">${new Date(a.published_at).toLocaleDateString()}</span>
+                </div>
+                <a href="${a.url}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" style="white-space: nowrap;">Open</a>
+              </div>
+            </div>
+          `).join('');
+        }
+        newsLoaded = true;
+      } catch (err) {
+        document.getElementById('newsContent').innerHTML = '<p style="color: var(--danger);">Error loading news: ' + err.message + '</p>';
+      }
+    }
+  } else {
+    panel.style.display = 'none';
   }
 }
 

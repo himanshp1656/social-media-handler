@@ -38,7 +38,7 @@ class UploadRequest(BaseModel):
 
 @router.post("/upload")
 def upload(req: UploadRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
-    result = upload_video(db, req.script_id, req.video_file_path, req.privacy_status, created_by=user.id)
+    result = upload_video(db, req.script_id, req.video_file_path, req.privacy_status, created_by=user.id, team_id=user.active_team_id)
     return result
 
 
@@ -84,6 +84,7 @@ def link_video(req: LinkRequest, db: Session = Depends(get_db), user: User = Dep
         youtube_video_id=video_id,
         upload_status="linked",
         created_by=user.id,
+        team_id=user.active_team_id,
         uploaded_at=datetime.now(timezone.utc),
     )
     db.add(upload_record)
@@ -132,7 +133,7 @@ async def upload_file(
         tmp.write(contents)
         tmp.close()
 
-        result = upload_video(db, script_id, tmp.name, privacy_status, created_by=user.id)
+        result = upload_video(db, script_id, tmp.name, privacy_status, created_by=user.id, team_id=user.active_team_id)
         return result
     finally:
         if os.path.exists(tmp.name):

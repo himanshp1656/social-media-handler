@@ -48,6 +48,17 @@ def scheduled_post_check():
 async def lifespan(app: FastAPI):
     # Startup
     init_db()
+    # Auto-seed mock data if DB is empty
+    db = SessionLocal()
+    try:
+        from app.seed import seed
+        result = seed(db)
+        if result["status"] == "seeded":
+            print(f"  Mock data loaded: {result['counts']}")
+    except Exception as e:
+        print(f"  Seed skipped: {e}")
+    finally:
+        db.close()
     scheduler.add_job(scheduled_analytics_fetch, "interval", hours=6, id="analytics_fetch")
     scheduler.add_job(scheduled_post_check, "interval", minutes=1, id="scheduled_post_check")
     scheduler.start()

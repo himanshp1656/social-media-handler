@@ -1,0 +1,252 @@
+[
+  {
+    "id": "analytics_rbi_fear",
+    "upload_id": "upload_rbi_fear",
+    "views": 245000,
+    "likes": 18200,
+    "comments": 3400,
+    "watch_time_minutes": 4820.5,
+    "ctr": 8.2,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_rbi_opp",
+    "upload_id": "upload_rbi_opp",
+    "views": 189000,
+    "likes": 14500,
+    "comments": 5200,
+    "watch_time_minutes": 3950.0,
+    "ctr": 6.8,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_rbi_myth",
+    "upload_id": "upload_rbi_myth",
+    "views": 67000,
+    "likes": 4200,
+    "comments": 890,
+    "watch_time_minutes": 980.3,
+    "ctr": 4.1,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_rbi_news",
+    "upload_id": "upload_rbi_news",
+    "views": 312000,
+    "likes": 9800,
+    "comments": 2100,
+    "watch_time_minutes": 5100.0,
+    "ctr": 9.5,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_rbi_contrarian",
+    "upload_id": "upload_rbi_contrarian",
+    "views": 520000,
+    "likes": 42000,
+    "comments": 8900,
+    "watch_time_minutes": 12400.0,
+    "ctr": 11.3,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_fd_fear",
+    "upload_id": "upload_fd_fear",
+    "views": 380000,
+    "likes": 28000,
+    "comments": 6700,
+    "watch_time_minutes": 8900.0,
+    "ctr": 9.8,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_fd_opp",
+    "upload_id": "upload_fd_opp",
+    "views": 156000,
+    "likes": 11200,
+    "comments": 4300,
+    "watch_time_minutes": 3200.0,
+    "ctr": 5.9,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_gold_fear",
+    "upload_id": "upload_gold_fear",
+    "views": 890000,
+    "likes": 67000,
+    "comments": 15000,
+    "watch_time_minutes": 22500.0,
+    "ctr": 14.2,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_gold_contrarian",
+    "upload_id": "upload_gold_contrarian",
+    "views": 145000,
+    "likes": 9800,
+    "comments": 3200,
+    "watch_time_minutes": 4100.0,
+    "ctr": 5.5,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_tax_myth",
+    "upload_id": "upload_tax_myth",
+    "views": 430000,
+    "likes": 31000,
+    "comments": 12000,
+    "watch_time_minutes": 11200.0,
+    "ctr": 10.1,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_tax_fear",
+    "upload_id": "upload_tax_fear",
+    "views": 210000,
+    "likes": 16500,
+    "comments": 7800,
+    "watch_time_minutes": 5400.0,
+    "ctr": 7.4,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_emergency_fear",
+    "upload_id": "upload_emergency_fear",
+    "views": 98000,
+    "likes": 7200,
+    "comments": 1900,
+    "watch_time_minutes": 1650.0,
+    "ctr": 4.8,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_emergency_opp",
+    "upload_id": "upload_emergency_opp",
+    "views": 42000,
+    "likes": 3100,
+    "comments": 680,
+    "watch_time_minutes": 720.0,
+    "ctr": 3.2,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_fd_myth",
+    "upload_id": "upload_fd_myth",
+    "views": 178000,
+    "likes": 13500,
+    "comments": 3800,
+    "watch_time_minutes": 3600.0,
+    "ctr": 6.2,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_fd_news",
+    "upload_id": "upload_fd_news",
+    "views": 267000,
+    "likes": 15800,
+    "comments": 4100,
+    "watch_time_minutes": 5800.0,
+    "ctr": 8.7,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_fd_contrarian",
+    "upload_id": "upload_fd_contrarian",
+    "views": 124000,
+    "likes": 8900,
+    "comments": 5600,
+    "watch_time_minutes": 2900.0,
+    "ctr": 5.1,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_gold_opportunity",
+    "upload_id": "upload_gold_opportunity",
+    "views": 198000,
+    "likes": 14200,
+    "comments": 3900,
+    "watch_time_minutes": 4300.0,
+    "ctr": 6.5,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_gold_myth",
+    "upload_id": "upload_gold_myth",
+    "views": 345000,
+    "likes": 26000,
+    "comments": 7200,
+    "watch_time_minutes": 8200.0,
+    "ctr": 10.8,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_gold_news",
+    "upload_id": "upload_gold_news",
+    "views": 223000,
+    "likes": 11500,
+    "comments": 2800,
+    "watch_time_minutes": 4600.0,
+    "ctr": 7.1,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_tax_opportunity",
+    "upload_id": "upload_tax_opportunity",
+    "views": 175000,
+    "likes": 12800,
+    "comments": 4500,
+    "watch_time_minutes": 3800.0,
+    "ctr": 6.0,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_tax_news",
+    "upload_id": "upload_tax_news",
+    "views": 356000,
+    "likes": 22000,
+    "comments": 8500,
+    "watch_time_minutes": 9100.0,
+    "ctr": 10.5,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_tax_contrarian",
+    "upload_id": "upload_tax_contrarian",
+    "views": 289000,
+    "likes": 21500,
+    "comments": 9200,
+    "watch_time_minutes": 7200.0,
+    "ctr": 8.9,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_emergency_myth",
+    "upload_id": "upload_emergency_myth",
+    "views": 134000,
+    "likes": 9800,
+    "comments": 4200,
+    "watch_time_minutes": 2800.0,
+    "ctr": 5.3,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_emergency_news",
+    "upload_id": "upload_emergency_news",
+    "views": 278000,
+    "likes": 19500,
+    "comments": 6100,
+    "watch_time_minutes": 6400.0,
+    "ctr": 8.4,
+    "fetched_at": "2026-05-07T06:00:00"
+  },
+  {
+    "id": "analytics_emergency_contrarian",
+    "upload_id": "upload_emergency_contrarian",
+    "views": 56000,
+    "likes": 4100,
+    "comments": 3800,
+    "watch_time_minutes": 1200.0,
+    "ctr": 3.8,
+    "fetched_at": "2026-05-07T06:00:00"
+  }
+]

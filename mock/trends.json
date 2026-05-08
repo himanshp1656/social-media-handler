@@ -1,0 +1,66 @@
+[
+  {
+    "id": "trend_rbi_rate",
+    "keyword": "RBI repo rate cut",
+    "source": "google_trends",
+    "trend_score": 92,
+    "suggested_brief": "RBI just cut repo rate to 6% — what it means for your EMI and FD returns",
+    "status": "used"
+  },
+  {
+    "id": "trend_fd_rates",
+    "keyword": "FD rates 2026",
+    "source": "news_api",
+    "trend_score": 88,
+    "suggested_brief": "Banks are quietly slashing FD rates — here's where to park your money instead",
+    "status": "used"
+  },
+  {
+    "id": "trend_gold_ath",
+    "keyword": "Gold price all time high",
+    "source": "google_trends",
+    "trend_score": 95,
+    "suggested_brief": "Gold hits 85,000 per 10g — should you buy, hold, or sell right now?",
+    "status": "used"
+  },
+  {
+    "id": "trend_sip_vs_lumpsum",
+    "keyword": "SIP vs lumpsum 2026",
+    "source": "news_api",
+    "trend_score": 78,
+    "suggested_brief": "Market at all-time high — is SIP still the right strategy or should you go lumpsum?",
+    "status": "accepted"
+  },
+  {
+    "id": "trend_tax_regime",
+    "keyword": "new tax regime vs old",
+    "source": "google_trends",
+    "trend_score": 85,
+    "suggested_brief": "New vs old tax regime after Budget 2026 — the math most people get wrong",
+    "status": "used"
+  },
+  {
+    "id": "trend_nps_changes",
+    "keyword": "NPS vatsalya scheme",
+    "source": "news_api",
+    "trend_score": 72,
+    "suggested_brief": "NPS Vatsalya: should you open this for your kids or just stick to PPF?",
+    "status": "suggested"
+  },
+  {
+    "id": "trend_credit_card",
+    "keyword": "credit card rewards devaluation",
+    "source": "news_api",
+    "trend_score": 68,
+    "suggested_brief": "Your credit card rewards are worth 40% less now — the silent devaluation nobody talks about",
+    "status": "suggested"
+  },
+  {
+    "id": "trend_reits",
+    "keyword": "REITs India 2026",
+    "source": "google_trends",
+    "trend_score": 74,
+    "suggested_brief": "REITs are giving 8-9% yield — better than FDs? The complete breakdown",
+    "status": "suggested"
+  }
+]

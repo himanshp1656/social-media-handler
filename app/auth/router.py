@@ -7,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import User, UserSession, new_id
+from app.models import User, UserSession, Team, new_id
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 templates = Jinja2Templates(directory="templates")
@@ -82,27 +82,54 @@ def signup(
     display_name: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
+    account_type: str = Form("individual"),
+    team_name: str = Form(""),
     db: Session = Depends(get_db),
 ):
     if db.query(User).filter(User.email == email).first():
         return templates.TemplateResponse(
             "signup.html",
-            {"request": request, "error": "Email already registered"},
+            {"request": request, "error": "Email already registered", "account_type": account_type},
             status_code=400,
         )
 
     if len(password) < 6:
         return templates.TemplateResponse(
             "signup.html",
-            {"request": request, "error": "Password must be at least 6 characters"},
+            {"request": request, "error": "Password must be at least 6 characters", "account_type": account_type},
             status_code=400,
         )
 
+    if account_type == "team" and not team_name.strip():
+        return templates.TemplateResponse(
+            "signup.html",
+            {"request": request, "error": "Team name is required", "account_type": account_type},
+            status_code=400,
+        )
+
+    user_id = new_id()
+
+    # Find or create the "All Content" default team
+    all_content = db.query(Team).filter(Team.name == "All Content").first()
+    if not all_content:
+        all_content = Team(id=new_id(), name="All Content", created_by=user_id)
+        db.add(all_content)
+        db.flush()
+
+    # Create additional team if team signup
+    team_id = all_content.id
+    if account_type == "team":
+        team = Team(id=new_id(), name=team_name.strip(), created_by=user_id)
+        db.add(team)
+        db.flush()
+        team_id = team.id
+
     user = User(
-        id=new_id(),
+        id=user_id,
         email=email.strip().lower(),
         display_name=display_name.strip(),
         password_hash=_hash_password(password),
+        active_team_id=team_id,
     )
     db.add(user)
     db.commit()
@@ -110,6 +137,30 @@ def signup(
     sess = _create_session(db, user.id)
     response = RedirectResponse(url="/", status_code=302)
     return _set_session_cookie(response, sess.id)
+
+
+# ── Switch active team ──
+
+@router.post("/switch-team")
+def switch_team(
+    request: Request,
+    team_id: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    from app.auth.dependencies import get_current_user
+    try:
+        user = get_current_user(request, db)
+    except Exception:
+        return RedirectResponse(url="/auth/login", status_code=302)
+
+    # Verify team exists
+    team = db.query(Team).filter(Team.id == team_id).first()
+    if team:
+        user.active_team_id = team_id
+
+    db.commit()
+    referer = request.headers.get("referer", "/")
+    return RedirectResponse(url=referer, status_code=302)
 
 
 @router.post("/logout")

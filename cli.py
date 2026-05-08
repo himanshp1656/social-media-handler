@@ -117,12 +117,42 @@ def cmd_insights(args):
         db.close()
 
 
+def cmd_seed(args):
+    """Load mock data into the database."""
+    init_db()
+    db = SessionLocal()
+    try:
+        from app.seed import seed
+        if args.force:
+            # Drop and recreate all tables for a clean reseed
+            from app.database import engine, Base
+            Base.metadata.drop_all(bind=engine)
+            Base.metadata.create_all(bind=engine)
+            print("\n  Database reset.")
+        result = seed(db)
+        if result["status"] == "seeded":
+            print(f"\n  Mock data loaded:")
+            for k, v in result["counts"].items():
+                print(f"    {k}: {v}")
+            print()
+        else:
+            print(f"\n  {result['message']}")
+            print("  Use --force to reset and reseed.\n")
+    finally:
+        db.close()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="AI-powered social media content engine",
         prog="content-engine",
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # seed
+    sd = subparsers.add_parser("seed", help="Load mock data into the database")
+    sd.add_argument("--force", action="store_true", help="Reset DB and reseed from scratch")
+    sd.set_defaults(func=cmd_seed)
 
     # generate
     gen = subparsers.add_parser("generate", help="Generate 5 multi-angle scripts from a brief")

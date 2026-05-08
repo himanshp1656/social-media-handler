@@ -6,7 +6,7 @@
   <div style="display: flex; justify-content: space-between; align-items: flex-start;">
     <div>
       <h2>Performance Insights</h2>
-      <p>Top scripts by views. Flow: Fetch Analytics → Update Scores → Generate Report</p>
+      <p>Analytics dashboard: what worked, what didn't, and why</p>
     </div>
     <div style="display: flex; gap: 8px;">
       <button class="btn btn-secondary" onclick="fetchAnalytics()">Fetch Analytics</button>
@@ -17,8 +17,18 @@
 </div>
 
 {% if scripts %}
-<div class="card">
-  <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 16px;">Top {{ scripts|length }} Scripts</h3>
+
+<!-- Angle x Hook Heatmap -->
+<div class="card" style="margin-bottom: 20px;">
+  <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Angle x Hook Heatmap</h3>
+  <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 16px;">Average engagement rate by combination — darker = higher engagement</p>
+  <div id="heatmapContainer"></div>
+</div>
+
+<!-- Top Performers -->
+<div class="card" style="margin-bottom: 20px;">
+  <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 16px; color: var(--green);">Top {{ scripts|length }} Scripts</h3>
+  <div class="table-wrap">
   <table class="insights-table">
     <thead>
       <tr>
@@ -28,8 +38,9 @@
         <th>Angle</th>
         <th>Hook</th>
         <th>Views</th>
-        <th>Likes</th>
-        <th>Comments</th>
+        <th>Eng. %</th>
+        <th>CTR</th>
+        <th>Watch Time</th>
         <th></th>
       </tr>
     </thead>
@@ -42,19 +53,63 @@
         <td><span class="badge badge-{{ s.angle }}">{{ s.angle.replace('_', ' ') }}</span></td>
         <td><span class="badge badge-{{ s.hook_type }}">{{ s.hook_type }}</span></td>
         <td class="num">{{ "{:,}".format(s.views) }}</td>
-        <td class="num">{{ "{:,}".format(s.likes) }}</td>
-        <td class="num">{{ "{:,}".format(s.comments) }}</td>
+        <td class="num" style="color: var(--green);">{{ s.engagement_rate }}%</td>
+        <td class="num" style="color: var(--cyan);">{{ s.ctr }}%</td>
+        <td class="num" style="color: var(--yellow);">{{ s.watch_time_minutes }}m</td>
         <td><a href="/ui/lineage/script/{{ s.id }}" class="btn btn-sm btn-secondary">Lineage</a></td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+  </div>
 </div>
+
+<!-- Bottom Performers -->
+{% if bottom_scripts %}
+<div class="card" style="margin-bottom: 20px;">
+  <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 16px; color: var(--red);">Bottom {{ bottom_scripts|length }} Scripts</h3>
+  <div class="table-wrap">
+  <table class="insights-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Title</th>
+        <th>Creator</th>
+        <th>Angle</th>
+        <th>Hook</th>
+        <th>Views</th>
+        <th>Eng. %</th>
+        <th>CTR</th>
+        <th>Watch Time</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in bottom_scripts %}
+      <tr>
+        <td class="rank" style="color: var(--red);">{{ loop.index }}</td>
+        <td class="title-cell">{{ s.title }}</td>
+        <td>{% if s.created_by and user_map %}<span class="creator-badge"><span class="cb-dot"></span>{{ user_map.get(s.created_by, '') }}</span>{% endif %}</td>
+        <td><span class="badge badge-{{ s.angle }}">{{ s.angle.replace('_', ' ') }}</span></td>
+        <td><span class="badge badge-{{ s.hook_type }}">{{ s.hook_type }}</span></td>
+        <td class="num">{{ "{:,}".format(s.views) }}</td>
+        <td class="num" style="color: var(--red);">{{ s.engagement_rate }}%</td>
+        <td class="num" style="color: var(--text-dim);">{{ s.ctr }}%</td>
+        <td class="num" style="color: var(--text-dim);">{{ s.watch_time_minutes }}m</td>
+        <td><a href="/ui/lineage/script/{{ s.id }}" class="btn btn-sm btn-secondary">Lineage</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endif %}
+
 {% else %}
 <div class="card">
   <div class="empty-state">
     <h3>No performance data yet</h3>
-    <p>Link videos to scripts, then click Fetch Analytics → Update Scores.</p>
+    <p>Link videos to scripts, then click Fetch Analytics -> Update Scores.</p>
   </div>
 </div>
 {% endif %}
@@ -101,11 +156,133 @@
     font-weight: 600;
     text-align: right;
   }
+
+  /* Heatmap */
+  .heatmap-grid {
+    display: grid;
+    gap: 4px;
+    font-size: 12px;
+  }
+  .heatmap-cell {
+    padding: 12px 8px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: default;
+    transition: transform 0.15s;
+    border: 1px solid transparent;
+  }
+  .heatmap-cell:hover {
+    transform: scale(1.05);
+    border-color: var(--border);
+  }
+  .heatmap-cell .hm-value {
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .heatmap-cell .hm-label {
+    font-size: 10px;
+    margin-top: 4px;
+    opacity: 0.7;
+  }
+  .heatmap-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    padding: 8px;
+    text-align: center;
+  }
+  .heatmap-row-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    padding: 12px 8px;
+    display: flex;
+    align-items: center;
+  }
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
+// Heatmap rendering
+const heatmapData = {{ heatmap_json | safe }};
+
+function renderHeatmap() {
+  const container = document.getElementById('heatmapContainer');
+  if (!container) return;
+
+  const { angles, hooks, cells } = heatmapData;
+  if (!angles.length || !hooks.length) {
+    container.innerHTML = '<p style="color: var(--text-dim); font-size: 13px;">No performance data to show heatmap yet.</p>';
+    return;
+  }
+
+  // Find max engagement for color scaling
+  const maxEng = Math.max(...cells.map(c => c.avg_engagement), 1);
+
+  // Grid: (angles+1) columns (first is label), (hooks+1) rows (first is header)
+  const cols = angles.length + 1;
+  container.innerHTML = '';
+
+  const grid = document.createElement('div');
+  grid.className = 'heatmap-grid';
+  grid.style.gridTemplateColumns = '120px ' + angles.map(() => '1fr').join(' ');
+
+  // Header row: empty corner + angle names
+  const corner = document.createElement('div');
+  corner.className = 'heatmap-header';
+  corner.textContent = '';
+  grid.appendChild(corner);
+
+  angles.forEach(angle => {
+    const h = document.createElement('div');
+    h.className = 'heatmap-header';
+    h.textContent = angle.replace('_', ' ');
+    grid.appendChild(h);
+  });
+
+  // Data rows: hook label + cells
+  hooks.forEach(hook => {
+    const label = document.createElement('div');
+    label.className = 'heatmap-row-label';
+    label.textContent = hook;
+    grid.appendChild(label);
+
+    angles.forEach(angle => {
+      const cell = cells.find(c => c.angle === angle && c.hook === hook);
+      const el = document.createElement('div');
+      el.className = 'heatmap-cell';
+
+      if (cell && cell.count > 0) {
+        const intensity = cell.avg_engagement / maxEng;
+        const r = Math.round(52 + (52 * (1 - intensity)));
+        const g = Math.round(211 * intensity + 80 * (1 - intensity));
+        const b = Math.round(153 * intensity + 80 * (1 - intensity));
+        el.style.background = `rgba(${r}, ${g}, ${b}, ${0.15 + intensity * 0.35})`;
+        el.style.color = `rgb(${r}, ${g}, ${b})`;
+        el.innerHTML = `
+          <div class="hm-value">${cell.avg_engagement}%</div>
+          <div class="hm-label">${cell.count} scripts / ${cell.total_views.toLocaleString()} views</div>
+        `;
+        el.title = `${angle.replace('_',' ')} + ${hook}\nAvg Score: ${cell.avg_score}\nEngagement: ${cell.avg_engagement}%\nScripts: ${cell.count}\nViews: ${cell.total_views.toLocaleString()}`;
+      } else {
+        el.style.background = 'rgba(255,255,255,0.02)';
+        el.style.color = 'var(--text-muted)';
+        el.innerHTML = '<div class="hm-value">-</div><div class="hm-label">no data</div>';
+      }
+
+      grid.appendChild(el);
+    });
+  });
+
+  container.appendChild(grid);
+}
+
+document.addEventListener('DOMContentLoaded', renderHeatmap);
+
 async function fetchAnalytics() {
   showLoading('Fetching YouTube analytics...');
   try {

@@ -30,7 +30,10 @@
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
       <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-dim);">Recent Briefs</h3>
-      <a href="/ui/generate" class="btn btn-sm btn-primary">+ New</a>
+      <div style="display: flex; gap: 8px;">
+        <a href="/ui/briefs" class="btn btn-sm btn-secondary">View All</a>
+        <a href="/ui/generate" class="btn btn-sm btn-primary">+ New</a>
+      </div>
     </div>
     {% if briefs %}
       {% for b in briefs %}

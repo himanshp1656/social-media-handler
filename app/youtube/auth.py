@@ -1,10 +1,12 @@
 import json
-import os
+from datetime import datetime, timezone
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from app.config import settings
+from app.database import SessionLocal
+from app.models import OAuthToken
 
-TOKEN_PATH = "data/youtube-token.json"
+PROVIDER = "youtube"
 
 SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
@@ -26,6 +28,19 @@ def _get_client_config() -> dict:
     }
 
 
+def _get_token_row(db=None):
+    """Get the YouTube token row from DB."""
+    close = False
+    if db is None:
+        db = SessionLocal()
+        close = True
+    try:
+        return db.query(OAuthToken).filter(OAuthToken.provider == PROVIDER).first()
+    finally:
+        if close:
+            db.close()
+
+
 def get_auth_url() -> str:
     flow = Flow.from_client_config(_get_client_config(), scopes=SCOPES)
     flow.redirect_uri = settings.YOUTUBE_REDIRECT_URI
@@ -39,56 +54,73 @@ def handle_callback(code: str) -> None:
     flow.fetch_token(code=code)
 
     creds = flow.credentials
-    os.makedirs(os.path.dirname(TOKEN_PATH), exist_ok=True)
-    with open(TOKEN_PATH, "w") as f:
-        json.dump({
-            "token": creds.token,
-            "refresh_token": creds.refresh_token,
-            "token_uri": creds.token_uri,
-            "client_id": creds.client_id,
-            "client_secret": creds.client_secret,
-            "scopes": creds.scopes,
-        }, f, indent=2)
+
+    db = SessionLocal()
+    try:
+        row = db.query(OAuthToken).filter(OAuthToken.provider == PROVIDER).first()
+        if row:
+            row.token = creds.token
+            row.refresh_token = creds.refresh_token
+            row.token_uri = creds.token_uri
+            row.updated_at = datetime.now(timezone.utc)
+        else:
+            row = OAuthToken(
+                provider=PROVIDER,
+                token=creds.token,
+                refresh_token=creds.refresh_token,
+                token_uri=creds.token_uri,
+            )
+            db.add(row)
+        db.commit()
+    finally:
+        db.close()
 
 
 def is_authenticated() -> bool:
-    """Check if YouTube OAuth token exists."""
-    return os.path.exists(TOKEN_PATH)
+    """Check if YouTube OAuth token exists in DB."""
+    return _get_token_row() is not None
 
 
 def get_credentials() -> Credentials:
-    if not os.path.exists(TOKEN_PATH):
+    row = _get_token_row()
+    if not row:
         raise FileNotFoundError(
             f"YouTube not authenticated. Visit this URL to authorize:\n{get_auth_url()}"
         )
 
-    with open(TOKEN_PATH) as f:
-        token_data = json.load(f)
-
     creds = Credentials(
-        token=token_data["token"],
-        refresh_token=token_data.get("refresh_token"),
-        token_uri=token_data.get("token_uri", "https://oauth2.googleapis.com/token"),
-        client_id=token_data.get("client_id", settings.YOUTUBE_CLIENT_ID),
-        client_secret=token_data.get("client_secret", settings.YOUTUBE_CLIENT_SECRET),
+        token=row.token,
+        refresh_token=row.refresh_token,
+        token_uri=row.token_uri or "https://oauth2.googleapis.com/token",
+        client_id=settings.YOUTUBE_CLIENT_ID,
+        client_secret=settings.YOUTUBE_CLIENT_SECRET,
     )
 
     if creds.expired and creds.refresh_token:
         from google.auth.transport.requests import Request
         try:
             creds.refresh(Request())
-            # Save refreshed token
-            with open(TOKEN_PATH, "w") as f:
-                json.dump({
-                    "token": creds.token,
-                    "refresh_token": creds.refresh_token,
-                    "token_uri": creds.token_uri,
-                    "client_id": creds.client_id,
-                    "client_secret": creds.client_secret,
-                }, f, indent=2)
+            # Save refreshed token back to DB
+            db = SessionLocal()
+            try:
+                db_row = db.query(OAuthToken).filter(OAuthToken.provider == PROVIDER).first()
+                if db_row:
+                    db_row.token = creds.token
+                    db_row.refresh_token = creds.refresh_token
+                    db_row.updated_at = datetime.now(timezone.utc)
+                    db.commit()
+            finally:
+                db.close()
         except Exception:
-            # Refresh token revoked or expired — delete stale token
-            os.remove(TOKEN_PATH)
+            # Refresh token revoked or expired — remove from DB
+            db = SessionLocal()
+            try:
+                db_row = db.query(OAuthToken).filter(OAuthToken.provider == PROVIDER).first()
+                if db_row:
+                    db.delete(db_row)
+                    db.commit()
+            finally:
+                db.close()
             return None
 
     return creds

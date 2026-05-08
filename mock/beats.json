@@ -1,0 +1,608 @@
+[
+  {
+    "id": "beat_rbi_fear_1", "script_id": "script_rbi_fear", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "RBI just made a decision that will cost you thousands.",
+    "on_screen_text": "RBI RATE CUT: What You'll Lose", "visual_cue": "RBI building with red alert overlay", "camera": "Close-up, eye level"
+  },
+  {
+    "id": "beat_rbi_fear_2", "script_id": "script_rbi_fear", "beat_number": 2, "beat_type": "problem",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "The repo rate is now 6%, down from 6.5%. Banks will slash FD rates within weeks.",
+    "on_screen_text": "Repo Rate: 6.5% -> 6.0%", "visual_cue": "Animated rate drop graph", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_rbi_fear_3", "script_id": "script_rbi_fear", "beat_number": 3, "beat_type": "insight",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "That 7.5% FD you were planning? It's going to be 6.8% or lower. But your EMI might drop -- if you act fast.",
+    "on_screen_text": "FD: 7.5% -> 6.8% | EMI: Drops IF you ask", "visual_cue": "Split screen: FD dropping, EMI calculator", "camera": "Medium shot, animated overlay"
+  },
+  {
+    "id": "beat_rbi_fear_4", "script_id": "script_rbi_fear", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Follow for daily finance updates so you never miss these changes.",
+    "on_screen_text": "FOLLOW for daily updates", "visual_cue": "Follow button animation", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_rbi_opp_1", "script_id": "script_rbi_opportunity", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "If you have a home loan, you're about to save Rs 2000 every month. Thank RBI.",
+    "on_screen_text": "HOME LOAN: Save Rs 2000/month", "visual_cue": "Home loan EMI calculator with green savings", "camera": "Close-up, excited"
+  },
+  {
+    "id": "beat_rbi_opp_2", "script_id": "script_rbi_opportunity", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:04-0:14", "duration_seconds": 10,
+    "voiceover": "RBI cut the repo rate to 6%. For a 50 lakh home loan, this means your EMI drops by roughly Rs 1800-2200.",
+    "on_screen_text": "50L loan = Rs 1800-2200 EMI drop", "visual_cue": "EMI before/after comparison animation", "camera": "Medium shot with calculator overlay"
+  },
+  {
+    "id": "beat_rbi_opp_3", "script_id": "script_rbi_opportunity", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:14-0:22", "duration_seconds": 8,
+    "voiceover": "But don't just celebrate -- use that savings to prepay your principal. You'll save lakhs in total interest.",
+    "on_screen_text": "Prepay principal = Save LAKHS in interest", "visual_cue": "Amortization chart showing interest saved with prepayment", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_rbi_opp_4", "script_id": "script_rbi_opportunity", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Comment your loan amount and I'll calculate your exact savings.",
+    "on_screen_text": "Comment your loan amount", "visual_cue": "Comment section animation", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_rbi_myth_1", "script_id": "script_rbi_myth", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Everyone's celebrating the rate cut. But your bank isn't going to reduce your EMI automatically.",
+    "on_screen_text": "Your EMI WON'T drop automatically", "visual_cue": "Celebration emoji turning into warning sign", "camera": "Close-up, serious"
+  },
+  {
+    "id": "beat_rbi_myth_2", "script_id": "script_rbi_myth", "beat_number": 2, "beat_type": "problem",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "Banks take 3-6 months to pass rate cuts. Some never fully pass them.",
+    "on_screen_text": "Banks delay: 3-6 months to pass cuts", "visual_cue": "Timeline showing RBI cut vs bank action delay", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_rbi_myth_3", "script_id": "script_rbi_myth", "beat_number": 3, "beat_type": "insight",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "You need to call your bank and explicitly ask for a rate revision. MCLR-linked loans adjust slower than repo-linked ones.",
+    "on_screen_text": "CALL your bank | MCLR vs Repo-linked", "visual_cue": "Phone call icon with bank, MCLR vs Repo comparison", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_rbi_myth_4", "script_id": "script_rbi_myth", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Save this video -- you'll need it when calling your bank.",
+    "on_screen_text": "SAVE this video", "visual_cue": "Save/bookmark button animation", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_rbi_news_1", "script_id": "script_rbi_news", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "RBI just cut rates for the second time this year. Here's what you need to know in 30 seconds.",
+    "on_screen_text": "RBI RATE CUT #2 -- 30 Second Breakdown", "visual_cue": "Breaking news banner with RBI logo", "camera": "Close-up, news anchor style"
+  },
+  {
+    "id": "beat_rbi_news_2", "script_id": "script_rbi_news", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:04-0:14", "duration_seconds": 10,
+    "voiceover": "Repo rate: 6%. Impact on you: FD rates drop, loan EMIs drop, stock market gets a boost.",
+    "on_screen_text": "Repo: 6% | FD down | EMI down | Markets up", "visual_cue": "Three-panel impact graphic with arrows", "camera": "Medium shot with data overlay"
+  },
+  {
+    "id": "beat_rbi_news_3", "script_id": "script_rbi_news", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:14-0:22", "duration_seconds": 8,
+    "voiceover": "Winners: borrowers, equity investors. Losers: FD holders, retirees depending on interest income.",
+    "on_screen_text": "Winners: Borrowers, Equity | Losers: FD holders, Retirees", "visual_cue": "Winners vs Losers split screen", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_rbi_news_4", "script_id": "script_rbi_news", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Which side are you on? Comment below.",
+    "on_screen_text": "Winner or Loser? Comment below", "visual_cue": "Poll-style graphic", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_rbi_contrarian_1", "script_id": "script_rbi_contrarian", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Everyone's happy about the rate cut. I'm worried. Here's why.",
+    "on_screen_text": "STOP celebrating the rate cut", "visual_cue": "Worried expression against celebration backdrop", "camera": "Close-up, concerned"
+  },
+  {
+    "id": "beat_rbi_contrarian_2", "script_id": "script_rbi_contrarian", "beat_number": 2, "beat_type": "problem",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "Rate cuts happen when the economy is slowing. RBI is cutting because consumption is weak and growth is under pressure.",
+    "on_screen_text": "Rate cuts = Economy SLOWING", "visual_cue": "GDP growth chart trending down with rate cut markers", "camera": "Medium shot with data"
+  },
+  {
+    "id": "beat_rbi_contrarian_3", "script_id": "script_rbi_contrarian", "beat_number": 3, "beat_type": "insight",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "Your EMI goes down, sure. But your job security might too. Focus on building your emergency fund, not spending more.",
+    "on_screen_text": "EMI down BUT job security at risk", "visual_cue": "Balance scale: lower EMI vs job risk", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_rbi_contrarian_4", "script_id": "script_rbi_contrarian", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Share this with someone who needs a reality check.",
+    "on_screen_text": "SHARE for a reality check", "visual_cue": "Share button animation", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_fd_fear_1", "script_id": "script_fd_fear", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "That 7% FD you're so proud of? After tax and inflation, you're actually losing money.",
+    "on_screen_text": "Your 7% FD = LOSING Money", "visual_cue": "FD certificate with money burning away", "camera": "Close-up, serious"
+  },
+  {
+    "id": "beat_fd_fear_2", "script_id": "script_fd_fear", "beat_number": 2, "beat_type": "problem",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "7% FD minus 30% tax equals 4.9% post-tax return. Inflation is running at 5.2%.",
+    "on_screen_text": "7% - 30% tax = 4.9% | Inflation: 5.2%", "visual_cue": "Math breakdown animation showing real returns going negative", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_fd_fear_3", "script_id": "script_fd_fear", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "You're losing 0.3% purchasing power every year. For a 10 lakh FD, that's Rs 3000 lost annually in real terms.",
+    "on_screen_text": "10L FD = Rs 3000 LOST every year", "visual_cue": "Rs 3000 being subtracted from a pile each year", "camera": "Medium shot with animation"
+  },
+  {
+    "id": "beat_fd_fear_4", "script_id": "script_fd_fear", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Want to know where smart money is going instead? Follow for Part 2.",
+    "on_screen_text": "FOLLOW for Part 2", "visual_cue": "Follow button with 'Part 2 coming' teaser", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_fd_opp_1", "script_id": "script_fd_opportunity", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "I moved 80% of my FD money into these 3 instruments. My returns went from 4.9% to 9.2% post-tax.",
+    "on_screen_text": "FD: 4.9% -> These 3: 9.2%", "visual_cue": "Returns comparison bar chart", "camera": "Close-up, confident"
+  },
+  {
+    "id": "beat_fd_opp_2", "script_id": "script_fd_opportunity", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "1. Debt mutual funds -- 7-8% with indexation benefit. 2. Corporate bonds via platforms -- 9-10% for AA rated.",
+    "on_screen_text": "Debt Funds: 7-8% | Corp Bonds: 9-10%", "visual_cue": "Two options with return percentages and risk meters", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_fd_opp_3", "script_id": "script_fd_opportunity", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "3. Arbitrage funds -- 7% returns taxed as equity. All safer than you think.",
+    "on_screen_text": "Arbitrage Funds: 7% taxed as equity", "visual_cue": "Safety rating comparison: FD vs these 3 alternatives", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_fd_opp_4", "script_id": "script_fd_opportunity", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Which one should I explain in detail? Comment 1, 2, or 3.",
+    "on_screen_text": "Comment: 1, 2, or 3?", "visual_cue": "Three options with vote-style buttons", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_fd_myth_1", "script_id": "script_fd_myth", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Your parents say FD is the safest. But they don't know about this one risk.",
+    "on_screen_text": "FDs are NOT the safest", "visual_cue": "FD certificate with hidden danger sign", "camera": "Close-up, leaning in"
+  },
+  {
+    "id": "beat_fd_myth_2", "script_id": "script_fd_myth", "beat_number": 2, "beat_type": "problem",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "FDs up to 5 lakhs are insured by DICGC. Anything above? If the bank fails, you lose it.",
+    "on_screen_text": "DICGC: Only Rs 5L insured per bank", "visual_cue": "Insurance coverage graphic showing the 5L cutoff", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_fd_myth_3", "script_id": "script_fd_myth", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "Yes, banks can fail -- remember Yes Bank, PMC Bank? Plus, FD locks your money. Liquid funds give similar safety with instant access.",
+    "on_screen_text": "Yes Bank, PMC Bank -- it happens", "visual_cue": "News headlines of bank failures", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_fd_myth_4", "script_id": "script_fd_myth", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "How much do you have in a single bank FD? Tell me in comments.",
+    "on_screen_text": "Comment your FD amount", "visual_cue": "Comment section animation", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_fd_news_1", "script_id": "script_fd_news", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "SBI quietly reduced FD rates by 25 basis points yesterday. No one is talking about this.",
+    "on_screen_text": "SBI CUT FD rates -- quietly", "visual_cue": "SBI logo with rate cut alert", "camera": "Close-up, revealing tone"
+  },
+  {
+    "id": "beat_fd_news_2", "script_id": "script_fd_news", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "SBI's 1-year FD is now 6.8%, down from 7.05%. HDFC and ICICI will follow within 2 weeks -- they always do.",
+    "on_screen_text": "SBI: 7.05% -> 6.8% | HDFC, ICICI next", "visual_cue": "Domino effect animation: SBI falls, others follow", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_fd_news_3", "script_id": "script_fd_news", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "If you need to lock in, do it NOW at smaller banks offering 7.5%+ before they cut too.",
+    "on_screen_text": "ACT NOW: Small banks still at 7.5%+", "visual_cue": "List of banks with current rates, some highlighted", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_fd_news_4", "script_id": "script_fd_news", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Save this before rates drop further. Share with family who has FDs.",
+    "on_screen_text": "SAVE + SHARE with family", "visual_cue": "Save and share button animation", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_fd_contrarian_1", "script_id": "script_fd_contrarian", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Everyone's bashing FDs right now. But here's why they're still the smartest choice for most Indians.",
+    "on_screen_text": "I still LOVE FDs -- here's why", "visual_cue": "FD certificate with heart icon against haters", "camera": "Close-up, defiant smile"
+  },
+  {
+    "id": "beat_fd_contrarian_2", "script_id": "script_fd_contrarian", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:04-0:14", "duration_seconds": 10,
+    "voiceover": "80% of Indians don't have the risk appetite for equity. For them, a guaranteed 7% beats a 'potential' 12% that drops 20% in a crash.",
+    "on_screen_text": "Guaranteed 7% > 'Potential' 12% with crashes", "visual_cue": "FD steady line vs volatile equity chart", "camera": "Medium shot with comparison chart"
+  },
+  {
+    "id": "beat_fd_contrarian_3", "script_id": "script_fd_contrarian", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:14-0:22", "duration_seconds": 8,
+    "voiceover": "FD laddering with 80C tax benefit gives you 7.5% effective. Stop comparing FDs to equity -- compare them to savings accounts.",
+    "on_screen_text": "FD laddering = 7.5% effective", "visual_cue": "FD ladder strategy infographic", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_fd_contrarian_4", "script_id": "script_fd_contrarian", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Agree or disagree? Fight me in the comments.",
+    "on_screen_text": "AGREE or DISAGREE? Comment", "visual_cue": "Boxing gloves animation", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_gold_fear_1", "script_id": "script_gold_fear", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Gold just hit 85,000. Your relatives are telling you to buy. Please don't.",
+    "on_screen_text": "GOLD: Rs 85,000 -- DON'T BUY", "visual_cue": "Gold price ticker hitting 85k", "camera": "Close-up, shaking head"
+  },
+  {
+    "id": "beat_gold_fear_2", "script_id": "script_gold_fear", "beat_number": 2, "beat_type": "problem",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "Every time gold hits an all-time high, retail investors pile in. Then it corrects 10-15%.",
+    "on_screen_text": "ATH -> Retail buys -> 10-15% crash", "visual_cue": "Chart showing gold crashes after peaks", "camera": "Medium shot with chart overlay"
+  },
+  {
+    "id": "beat_gold_fear_3", "script_id": "script_gold_fear", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:12-0:20", "duration_seconds": 8,
+    "voiceover": "In 2012, gold hit 32,000 and took 7 years to recover.",
+    "on_screen_text": "2012: Rs 32,000 -> Recovery: 2019", "visual_cue": "2012-2019 gold price chart", "camera": "Wide shot with timeline"
+  },
+  {
+    "id": "beat_gold_fear_4", "script_id": "script_gold_fear", "beat_number": 4, "beat_type": "insight",
+    "timestamp": "0:20-0:26", "duration_seconds": 6,
+    "voiceover": "If you must buy, use SGB or Gold ETF -- never physical gold with making charges.",
+    "on_screen_text": "SGB > ETF > Physical Gold", "visual_cue": "Comparison table: SGB vs ETF vs Physical", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_gold_fear_5", "script_id": "script_gold_fear", "beat_number": 5, "beat_type": "cta",
+    "timestamp": "0:26-0:30", "duration_seconds": 4,
+    "voiceover": "Tag someone who's about to make this mistake.",
+    "on_screen_text": "TAG a friend", "visual_cue": "Tag animation", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_gold_opp_1", "script_id": "script_gold_opportunity", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Gold at 85K. You want to buy but don't want to get burned. Here's the exact strategy.",
+    "on_screen_text": "GOLD at 85K -- Smart Buying Strategy", "visual_cue": "Gold bar with strategy checklist", "camera": "Close-up, confident"
+  },
+  {
+    "id": "beat_gold_opp_2", "script_id": "script_gold_opportunity", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "Don't lumpsum at ATH. Start a Gold SIP via Gold ETF -- Rs 1000 per month. Over 12 months, you'll average out the price.",
+    "on_screen_text": "Gold SIP: Rs 1000/month via ETF", "visual_cue": "SIP vs lumpsum chart showing cost averaging", "camera": "Medium shot with animated graph"
+  },
+  {
+    "id": "beat_gold_opp_3", "script_id": "script_gold_opportunity", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:12-0:20", "duration_seconds": 8,
+    "voiceover": "For bigger amounts, wait for Sovereign Gold Bonds -- 2.5% annual interest plus zero capital gains tax at maturity.",
+    "on_screen_text": "SGB: 2.5% interest + Tax-Free at maturity", "visual_cue": "SGB return breakdown infographic", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_gold_opp_4", "script_id": "script_gold_opportunity", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:20-0:30", "duration_seconds": 10,
+    "voiceover": "Which gold instrument do you use? Comment below.",
+    "on_screen_text": "Comment: ETF / SGB / Physical?", "visual_cue": "Poll-style comment prompt", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_gold_myth_1", "script_id": "script_gold_myth", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Your grandmother's gold jewellery lost 25% value the day she bought it. Here's the math.",
+    "on_screen_text": "Gold Jewellery = -25% on Day 1", "visual_cue": "Gold necklace with price tag dissolving", "camera": "Close-up, serious expression"
+  },
+  {
+    "id": "beat_gold_myth_2", "script_id": "script_gold_myth", "beat_number": 2, "beat_type": "problem",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "Making charges: 8-25%. GST: 3%. Resale markdown: 5-10%. A Rs 1 lakh gold chain is worth Rs 65,000 the moment you walk out.",
+    "on_screen_text": "Making: 25% + GST: 3% + Resale: -10% = Rs 65K", "visual_cue": "Cost breakdown animation stripping value from 1 lakh", "camera": "Medium shot with animated deductions"
+  },
+  {
+    "id": "beat_gold_myth_3", "script_id": "script_gold_myth", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "SGBs have zero making charges, earn 2.5% interest, and are tax-free on maturity. Same gold, 40% better returns.",
+    "on_screen_text": "SGB: 0% charges + 2.5% interest + Tax-free", "visual_cue": "Side-by-side: Jewellery vs SGB returns over 8 years", "camera": "Medium shot with comparison chart"
+  },
+  {
+    "id": "beat_gold_myth_4", "script_id": "script_gold_myth", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Show this to anyone buying gold jewellery as 'investment'.",
+    "on_screen_text": "SHARE with someone who needs this", "visual_cue": "Share button animation", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_gold_news_1", "script_id": "script_gold_news", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Central banks just bought the most gold since 1967. They know something we don't.",
+    "on_screen_text": "Central Banks: Most Gold Since 1967", "visual_cue": "World map with gold flow arrows to central banks", "camera": "Close-up, leaning in"
+  },
+  {
+    "id": "beat_gold_news_2", "script_id": "script_gold_news", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "1,037 tonnes in 2025. China, India, Turkey leading the buying. Why? De-dollarization.",
+    "on_screen_text": "2025: 1,037 tonnes | China, India, Turkey", "visual_cue": "Bar chart of central bank gold purchases by country", "camera": "Medium shot with data overlay"
+  },
+  {
+    "id": "beat_gold_news_3", "script_id": "script_gold_news", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "Countries are reducing US Treasury holdings and replacing with gold. When central banks panic-buy, retail investors should pay attention.",
+    "on_screen_text": "US Treasuries DOWN | Gold Reserves UP", "visual_cue": "Inverse chart: Treasury holdings falling, gold rising", "camera": "Medium shot with animated charts"
+  },
+  {
+    "id": "beat_gold_news_4", "script_id": "script_gold_news", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Follow for more macro insights that actually matter.",
+    "on_screen_text": "FOLLOW for macro insights", "visual_cue": "Follow button with globe icon", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_gold_contrarian_1", "script_id": "script_gold_contrarian", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:05", "duration_seconds": 5,
+    "voiceover": "Everyone says gold is expensive at 85,000. But what if I told you it's actually undervalued?",
+    "on_screen_text": "Gold at 85K = Actually CHEAP?", "visual_cue": "Gold price with question mark and 'undervalued' stamp", "camera": "Close-up, eyebrow raised"
+  },
+  {
+    "id": "beat_gold_contrarian_2", "script_id": "script_gold_contrarian", "beat_number": 2, "beat_type": "proof",
+    "timestamp": "0:05-0:20", "duration_seconds": 15,
+    "voiceover": "Adjusted for inflation, gold's 1980 peak of Rs 1,330 equals Rs 95,000 today. We're still 12% below that.",
+    "on_screen_text": "1980 peak = Rs 95,000 adjusted | Still 12% below", "visual_cue": "Inflation-adjusted gold price timeline 1980 to 2026", "camera": "Medium shot with historical chart"
+  },
+  {
+    "id": "beat_gold_contrarian_3", "script_id": "script_gold_contrarian", "beat_number": 3, "beat_type": "insight",
+    "timestamp": "0:20-0:40", "duration_seconds": 20,
+    "voiceover": "Plus, central banks bought 1,037 tonnes last year -- the most since 1967. De-dollarization is real. Gold isn't a trade, it's insurance.",
+    "on_screen_text": "Central banks: 1,037 tonnes | Gold = Insurance", "visual_cue": "Central bank vault doors opening with gold bars", "camera": "Wide shot, dramatic"
+  },
+  {
+    "id": "beat_gold_contrarian_4", "script_id": "script_gold_contrarian", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:40-0:50", "duration_seconds": 10,
+    "voiceover": "What % of your portfolio is in gold? Comment below.",
+    "on_screen_text": "Comment your gold allocation %", "visual_cue": "Pie chart template with gold slice", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_tax_myth_1", "script_id": "script_tax_myth", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:05", "duration_seconds": 5,
+    "voiceover": "Your CA told you old regime saves more tax. They're wrong if you earn under 12 lakhs.",
+    "on_screen_text": "Your CA is WRONG", "visual_cue": "Tax form with X mark", "camera": "Close-up, confident"
+  },
+  {
+    "id": "beat_tax_myth_2", "script_id": "script_tax_myth", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:05-0:15", "duration_seconds": 10,
+    "voiceover": "New regime: zero tax up to 12 lakhs with standard deduction. Old regime: you need 4+ lakhs in deductions just to break even.",
+    "on_screen_text": "New: Rs 0 tax up to Rs 12L | Old: Need Rs 4L+ deductions", "visual_cue": "Side-by-side calculation animation", "camera": "Medium shot with split screen"
+  },
+  {
+    "id": "beat_tax_myth_3", "script_id": "script_tax_myth", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:15-0:24", "duration_seconds": 9,
+    "voiceover": "Unless you have HRA plus 80C plus 80D plus NPS maxed out, new regime wins. Do the math, not the myth.",
+    "on_screen_text": "HRA + 80C + 80D + NPS = Still loses to New Regime", "visual_cue": "Checklist showing all deductions needed", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_tax_myth_4", "script_id": "script_tax_myth", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:24-0:30", "duration_seconds": 6,
+    "voiceover": "Comment your salary and I'll tell you which regime saves more.",
+    "on_screen_text": "Comment your CTC", "visual_cue": "Comment section animation", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_tax_fear_1", "script_id": "script_tax_fear", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "I looked at 50 people's tax returns. 47 of them were overpaying. Here's the #1 mistake.",
+    "on_screen_text": "47 out of 50 are OVERPAYING tax", "visual_cue": "Tax return pile with red marks on 47", "camera": "Close-up, shocked expression"
+  },
+  {
+    "id": "beat_tax_fear_2", "script_id": "script_tax_fear", "beat_number": 2, "beat_type": "problem",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "The biggest mistake: choosing old regime without actually calculating. Most salaried people under 15 lakhs save more with the new regime.",
+    "on_screen_text": "Under 15L? New regime likely SAVES more", "visual_cue": "Calculator showing old vs new regime comparison", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_tax_fear_3", "script_id": "script_tax_fear", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "But they pick old because 'everyone says so'. One wrong checkbox costs Rs 30,000-50,000 per year.",
+    "on_screen_text": "Wrong checkbox = Rs 30K-50K LOST per year", "visual_cue": "ITR form with checkbox highlighted, money flying away", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_tax_fear_4", "script_id": "script_tax_fear", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "DM me 'TAX' and I'll share my free comparison calculator.",
+    "on_screen_text": "DM 'TAX' for free calculator", "visual_cue": "DM button animation with calculator preview", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_tax_opp_1", "script_id": "script_tax_opportunity", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Most people save 50K on taxes. Top 1% save 1.5 lakhs. The difference? They use Section 80CCD(2).",
+    "on_screen_text": "Top 1% save Rs 1.5L tax -- here's how", "visual_cue": "Tax savings comparison bar: 50K vs 1.5L", "camera": "Close-up, knowing look"
+  },
+  {
+    "id": "beat_tax_opp_2", "script_id": "script_tax_opportunity", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:04-0:14", "duration_seconds": 10,
+    "voiceover": "Your employer can contribute up to 10% of basic to NPS under 80CCD(2). This is ABOVE the 1.5L 80C limit.",
+    "on_screen_text": "80CCD(2): 10% of basic | ABOVE 80C limit", "visual_cue": "Salary breakdown showing NPS employer contribution", "camera": "Medium shot with infographic"
+  },
+  {
+    "id": "beat_tax_opp_3", "script_id": "script_tax_opportunity", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:14-0:22", "duration_seconds": 8,
+    "voiceover": "On a 12L CTC with 6L basic, that's 60K extra deduction. Combined with 80C, 80D, and HRA, old regime becomes a tax-saving machine.",
+    "on_screen_text": "12L CTC = Rs 60K extra deduction via NPS", "visual_cue": "Stacking deductions animation building savings", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_tax_opp_4", "script_id": "script_tax_opportunity", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Ask your HR about 80CCD(2) tomorrow. Screenshot this as a reminder.",
+    "on_screen_text": "Screenshot + Ask HR tomorrow", "visual_cue": "Screenshot animation with calendar reminder", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_tax_news_1", "script_id": "script_tax_news", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Everyone focused on the 12 lakh rebate. But 3 other changes will save you more money.",
+    "on_screen_text": "3 Budget changes NOBODY covered", "visual_cue": "Budget 2026 document with 3 hidden gems highlighted", "camera": "Close-up, insider tone"
+  },
+  {
+    "id": "beat_tax_news_2", "script_id": "script_tax_news", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:04-0:14", "duration_seconds": 10,
+    "voiceover": "1. Standard deduction increased to 75K. 2. NPS Vatsalya for kids -- 50K extra deduction. 3. New regime slabs widened.",
+    "on_screen_text": "1. SD: 75K | 2. NPS Vatsalya: 50K | 3. Wider slabs", "visual_cue": "Three cards flipping to reveal each change", "camera": "Medium shot with card animation"
+  },
+  {
+    "id": "beat_tax_news_3", "script_id": "script_tax_news", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:14-0:22", "duration_seconds": 8,
+    "voiceover": "Most YouTube CAs only covered the headline. These 3 changes matter more for 15L+ earners.",
+    "on_screen_text": "15L+ earners: These save MORE than 12L rebate", "visual_cue": "Savings comparison chart for 15L+ income", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_tax_news_4", "script_id": "script_tax_news", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Which change benefits you most? Comment 1, 2, or 3.",
+    "on_screen_text": "Comment: 1, 2, or 3?", "visual_cue": "Three option poll graphic", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_tax_contrarian_1", "script_id": "script_tax_contrarian", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Unpopular opinion: tax saving is making you poorer. Here's why.",
+    "on_screen_text": "Tax saving = Making you POORER", "visual_cue": "Tax saving certificate being torn apart", "camera": "Close-up, provocative"
+  },
+  {
+    "id": "beat_tax_contrarian_2", "script_id": "script_tax_contrarian", "beat_number": 2, "beat_type": "problem",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "People invest 1.5L in bad ELSS funds just for 80C. They buy insurance-cum-investment plans for 'tax benefit'.",
+    "on_screen_text": "Bad ELSS + LIC plans = Tax trap", "visual_cue": "Money going into low-return products", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_tax_contrarian_3", "script_id": "script_tax_contrarian", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "The tax saved: 45K. The returns lost vs index fund: 2-3 lakhs over 10 years. Focus on wealth creation first. Tax saving is a side effect, not a goal.",
+    "on_screen_text": "Tax saved: 45K | Returns lost: 2-3L over 10yr", "visual_cue": "Side-by-side: bad ELSS vs index fund over 10 years", "camera": "Medium shot with comparison"
+  },
+  {
+    "id": "beat_tax_contrarian_4", "script_id": "script_tax_contrarian", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Harsh truth? Or do you disagree? Comment below.",
+    "on_screen_text": "Harsh truth or wrong? Comment", "visual_cue": "Debate-style graphic", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_emergency_fear_1", "script_id": "script_emergency_fear", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Your bank gives you 3.5% on savings. Inflation is 5.2%. You're getting robbed legally.",
+    "on_screen_text": "Savings: 3.5% | Inflation: 5.2% = ROBBED", "visual_cue": "Bank vault with money disappearing through inflation hole", "camera": "Close-up, intense"
+  },
+  {
+    "id": "beat_emergency_fear_2", "script_id": "script_emergency_fear", "beat_number": 2, "beat_type": "problem",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "Rs 5 lakh in savings loses Rs 8,500 in purchasing power every year.",
+    "on_screen_text": "5L savings = Rs 8,500 lost/year", "visual_cue": "Money counter going backwards", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_emergency_fear_3", "script_id": "script_emergency_fear", "beat_number": 3, "beat_type": "insight",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "Move your emergency fund to a liquid fund at 6.5% or a sweep-in FD at 7%. Same liquidity, almost double the returns.",
+    "on_screen_text": "Liquid fund: 6.5% | Sweep-in FD: 7%", "visual_cue": "Savings vs alternatives return comparison bars", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_emergency_fear_4", "script_id": "script_emergency_fear", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "How much is sitting idle in your savings? Be honest in comments.",
+    "on_screen_text": "Comment: How much in savings?", "visual_cue": "Comment prompt animation", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_emergency_opp_1", "script_id": "script_emergency_opp", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "I keep 6 months of expenses as emergency fund. But it earns me Rs 3000 per month. Here's how.",
+    "on_screen_text": "Emergency fund = Rs 3000/month income", "visual_cue": "Money growing from emergency fund jar", "camera": "Close-up, proud smile"
+  },
+  {
+    "id": "beat_emergency_opp_2", "script_id": "script_emergency_opp", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:04-0:14", "duration_seconds": 10,
+    "voiceover": "Split it: 1 month in savings for instant access. 2 months in liquid fund -- withdraw in 1 day. 3 months in short-term FD at 7.5%.",
+    "on_screen_text": "1mo: Savings | 2mo: Liquid Fund | 3mo: FD", "visual_cue": "3-tier pyramid showing fund allocation", "camera": "Medium shot with animated pyramid"
+  },
+  {
+    "id": "beat_emergency_opp_3", "script_id": "script_emergency_opp", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:14-0:22", "duration_seconds": 8,
+    "voiceover": "Blended return: 6.8% vs 3.5% in savings. Zero risk increase.",
+    "on_screen_text": "Blended: 6.8% vs Savings: 3.5% | Same risk", "visual_cue": "Returns bar chart comparison", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_emergency_opp_4", "script_id": "script_emergency_opp", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Save this and set it up this weekend.",
+    "on_screen_text": "SAVE this -- do it this weekend", "visual_cue": "Save button with weekend calendar reminder", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_emergency_myth_1", "script_id": "script_emergency_myth", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "Every finance influencer says keep 6 months expenses. For most of you, that's wrong.",
+    "on_screen_text": "6 months rule is WRONG for you", "visual_cue": "'6 months' text with big X mark", "camera": "Close-up, challenging"
+  },
+  {
+    "id": "beat_emergency_myth_2", "script_id": "script_emergency_myth", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:04-0:14", "duration_seconds": 10,
+    "voiceover": "Dual income household? 3 months is enough. Government job? 2 months. Single income with dependents? You need 9-12 months.",
+    "on_screen_text": "Dual income: 3mo | Govt: 2mo | Single earner: 9-12mo", "visual_cue": "Different family profiles with personalized amounts", "camera": "Medium shot with profile cards"
+  },
+  {
+    "id": "beat_emergency_myth_3", "script_id": "script_emergency_myth", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:14-0:22", "duration_seconds": 8,
+    "voiceover": "The '6 month rule' ignores your actual risk profile. A 25-year-old techie and a 50-year-old sole earner need very different buffers.",
+    "on_screen_text": "25yo techie vs 50yo sole earner = Different needs", "visual_cue": "Two contrasting profiles with risk meters", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_emergency_myth_4", "script_id": "script_emergency_myth", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "What's your situation? Comment and I'll tell you your number.",
+    "on_screen_text": "Comment your situation -- I'll reply", "visual_cue": "Comment prompt with personalized reply preview", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_emergency_news_1", "script_id": "script_emergency_news", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "3 major IT companies announced hiring freezes this week. Is your emergency fund ready?",
+    "on_screen_text": "IT Hiring Freeze -- Are you ready?", "visual_cue": "News headlines from TCS, Infosys, Wipro", "camera": "Close-up, urgent"
+  },
+  {
+    "id": "beat_emergency_news_2", "script_id": "script_emergency_news", "beat_number": 2, "beat_type": "problem",
+    "timestamp": "0:04-0:12", "duration_seconds": 8,
+    "voiceover": "TCS, Infosys, and Wipro are slowing hiring. Startups are doing silent layoffs.",
+    "on_screen_text": "TCS + Infosys + Wipro: Hiring slow | Startups: Silent layoffs", "visual_cue": "Company logos with freeze/slowdown indicators", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_emergency_news_3", "script_id": "script_emergency_news", "beat_number": 3, "beat_type": "insight",
+    "timestamp": "0:12-0:22", "duration_seconds": 10,
+    "voiceover": "If you don't have 6 months of expenses saved, start today. Not tomorrow. Even Rs 5000 per month into a liquid fund. In 12 months, you'll have a 65K buffer.",
+    "on_screen_text": "Rs 5000/month = Rs 65K in 12 months", "visual_cue": "SIP growth chart starting from 5000", "camera": "Medium shot with growth animation"
+  },
+  {
+    "id": "beat_emergency_news_4", "script_id": "script_emergency_news", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Be honest -- do you have an emergency fund? Yes or No in comments.",
+    "on_screen_text": "YES or NO? Comment below", "visual_cue": "Yes/No poll-style graphic", "camera": "Close-up, direct to camera"
+  },
+  {
+    "id": "beat_emergency_contrarian_1", "script_id": "script_emergency_contrarian", "beat_number": 1, "beat_type": "hook",
+    "timestamp": "0:00-0:04", "duration_seconds": 4,
+    "voiceover": "I don't keep an emergency fund. And I'm a financial content creator. Here's my logic.",
+    "on_screen_text": "I have NO emergency fund", "visual_cue": "Empty emergency fund jar with confident face", "camera": "Close-up, confession style"
+  },
+  {
+    "id": "beat_emergency_contrarian_2", "script_id": "script_emergency_contrarian", "beat_number": 2, "beat_type": "insight",
+    "timestamp": "0:04-0:14", "duration_seconds": 10,
+    "voiceover": "I have a credit card with 3L limit -- that's 45 days of float. I have a 5L overdraft facility against my FD -- instant access at 8%.",
+    "on_screen_text": "Credit card: 3L float | OD on FD: 5L at 8%", "visual_cue": "Alternative safety net layers stacking up", "camera": "Medium shot with infographic"
+  },
+  {
+    "id": "beat_emergency_contrarian_3", "script_id": "script_emergency_contrarian", "beat_number": 3, "beat_type": "proof",
+    "timestamp": "0:14-0:22", "duration_seconds": 8,
+    "voiceover": "And I have health insurance. The 'emergency' most people fear is already covered. I invest that 6 months instead.",
+    "on_screen_text": "Health insurance + Credit + OD = Covered | 6mo invested instead", "visual_cue": "Shield icons covering emergencies, investment growing", "camera": "Medium shot"
+  },
+  {
+    "id": "beat_emergency_contrarian_4", "script_id": "script_emergency_contrarian", "beat_number": 4, "beat_type": "cta",
+    "timestamp": "0:22-0:30", "duration_seconds": 8,
+    "voiceover": "Am I crazy or genius? Roast me in comments.",
+    "on_screen_text": "Crazy or Genius? ROAST me", "visual_cue": "Fire emoji with comment section", "camera": "Close-up, direct to camera, smirking"
+  }
+]

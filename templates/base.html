@@ -93,6 +93,27 @@
         </a>
       </nav>
       {% if current_user %}
+      <!-- Team Switcher -->
+      {% if teams is defined and teams %}
+      <div class="sidebar-team">
+        <div class="team-label">Team</div>
+        <div class="team-switcher" id="teamSwitcher" onclick="toggleTeamMenu()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>{{ active_team_name|default('All Content') }}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="team-menu" id="teamMenu">
+          {% for t in teams %}
+          <form method="POST" action="/auth/switch-team">
+            <input type="hidden" name="team_id" value="{{ t.id }}">
+            <button type="submit" class="team-option {% if current_user.active_team_id == t.id %}active{% endif %}">{{ t.name }}</button>
+          </form>
+          {% endfor %}
+          <a href="/ui/team/create" class="team-option team-create">+ Create Team</a>
+        </div>
+      </div>
+      {% endif %}
+
       <div class="sidebar-user">
         <div class="user-avatar">{{ current_user.display_name[0]|upper }}</div>
         <div class="user-info">
@@ -116,7 +137,43 @@
     <p id="loadingText">Generating scripts...</p>
   </div>
 
+  <style>
+    .sidebar-team { padding: 8px 16px; border-top: 1px solid var(--border); }
+    .team-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 6px; }
+    .team-switcher {
+      display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+      background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+    }
+    .team-switcher:hover { border-color: var(--accent); }
+    .team-switcher svg:first-child { color: var(--accent); flex-shrink: 0; }
+    .team-menu {
+      display: none; margin-top: 4px; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); overflow: hidden;
+    }
+    .team-menu.open { display: block; }
+    .team-option {
+      display: block; width: 100%; padding: 8px 12px; background: none; border: none;
+      color: var(--text-muted); font-size: 12px; font-weight: 500; cursor: pointer;
+      text-align: left; transition: all 0.15s; text-decoration: none;
+    }
+    .team-option:hover { background: var(--bg-surface); color: var(--text); }
+    .team-option.active { color: var(--accent); font-weight: 700; }
+    .team-create { color: var(--accent); border-top: 1px solid var(--border); }
+  </style>
+
   <script>
+    function toggleTeamMenu() {
+      document.getElementById('teamMenu').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      const sw = document.getElementById('teamSwitcher');
+      const menu = document.getElementById('teamMenu');
+      if (sw && menu && !sw.contains(e.target) && !menu.contains(e.target)) {
+        menu.classList.remove('open');
+      }
+    });
+
     function showLoading(text) {
       document.getElementById('loadingText').textContent = text || 'Loading...';
       document.getElementById('loadingOverlay').classList.add('active');

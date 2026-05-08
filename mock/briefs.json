@@ -1,0 +1,37 @@
+[
+  {
+    "id": "brief_rbi_emi",
+    "topic": "RBI Rate Cut Impact",
+    "raw_brief": "RBI just cut repo rate to 6% — what it means for your EMI and FD returns",
+    "suggestion_id": "trend_rbi_rate",
+    "created_by": "user_himanshu"
+  },
+  {
+    "id": "brief_fd_slash",
+    "topic": "FD Rate Cuts",
+    "raw_brief": "Banks are quietly slashing FD rates — here's where to park your money instead",
+    "suggestion_id": "trend_fd_rates",
+    "created_by": "user_priya"
+  },
+  {
+    "id": "brief_gold_ath",
+    "topic": "Gold All-Time High",
+    "raw_brief": "Gold hits 85,000 per 10g — should you buy, hold, or sell right now?",
+    "suggestion_id": "trend_gold_ath",
+    "created_by": "user_himanshu"
+  },
+  {
+    "id": "brief_tax_regime",
+    "topic": "Tax Regime Comparison",
+    "raw_brief": "New vs old tax regime after Budget 2026 — the math most people get wrong",
+    "suggestion_id": "trend_tax_regime",
+    "created_by": "user_priya"
+  },
+  {
+    "id": "brief_emergency_fund",
+    "topic": "Emergency Fund",
+    "raw_brief": "Why keeping 6 months expenses in savings account is costing you money",
+    "suggestion_id": null,
+    "created_by": "user_himanshu"
+  }
+]

@@ -32,7 +32,7 @@ class BatchGenerateRequest(BaseModel):
 
 @router.post("/generate")
 def generate(req: GenerateRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
-    result = generate_scripts(db, req.brief, req.platform, req.duration, req.language, req.trend_keywords, req.template_id, req.suggestion_id, created_by=user.id)
+    result = generate_scripts(db, req.brief, req.platform, req.duration, req.language, req.trend_keywords, req.template_id, req.suggestion_id, created_by=user.id, team_id=user.active_team_id)
     return result
 
 
@@ -45,7 +45,7 @@ def generate_batch(req: BatchGenerateRequest, db: Session = Depends(get_db), use
         if not brief:
             continue
         try:
-            result = generate_scripts(db, brief, req.platform, req.duration, req.language, created_by=user.id)
+            result = generate_scripts(db, brief, req.platform, req.duration, req.language, created_by=user.id, team_id=user.active_team_id)
             results.append(result)
         except Exception as e:
             errors.append({"brief": brief, "error": str(e)})
@@ -54,7 +54,10 @@ def generate_batch(req: BatchGenerateRequest, db: Session = Depends(get_db), use
 
 @router.get("/briefs")
 def list_briefs(db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
-    briefs = db.query(ContentBrief).order_by(desc(ContentBrief.created_at)).limit(20).all()
+    q = db.query(ContentBrief)
+    if user.active_team_id:
+        q = q.filter(ContentBrief.team_id == user.active_team_id)
+    briefs = q.order_by(desc(ContentBrief.created_at)).limit(20).all()
     return [
         {"id": b.id, "topic": b.topic, "raw_brief": b.raw_brief, "created_at": str(b.created_at)}
         for b in briefs
@@ -311,6 +314,7 @@ def save_template(req: SaveTemplateRequest, db: Session = Depends(get_db), user:
         beat_structure=json.dumps(beat_structure),
         source_script_id=script.id,
         created_by=user.id,
+        team_id=user.active_team_id,
     )
     db.add(template)
     db.commit()
@@ -320,7 +324,10 @@ def save_template(req: SaveTemplateRequest, db: Session = Depends(get_db), user:
 
 @router.get("/templates")
 def list_templates(db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
-    tpls = db.query(ScriptTemplate).order_by(desc(ScriptTemplate.created_at)).all()
+    q = db.query(ScriptTemplate)
+    if user.active_team_id:
+        q = q.filter(ScriptTemplate.team_id == user.active_team_id)
+    tpls = q.order_by(desc(ScriptTemplate.created_at)).all()
     return [
         {
             "id": t.id,

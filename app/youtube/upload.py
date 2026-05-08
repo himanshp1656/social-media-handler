@@ -13,6 +13,7 @@ def upload_video(
     video_file_path: str,
     privacy_status: str = "private",
     created_by: str | None = None,
+    team_id: str | None = None,
 ) -> dict:
     # Get script for metadata
     script = db.query(Script).filter(Script.id == script_id).first()
@@ -20,7 +21,7 @@ def upload_video(
         raise ValueError(f"Script {script_id} not found")
 
     # Create upload record
-    upload = Upload(id=new_id(), script_id=script_id, created_by=created_by)
+    upload = Upload(id=new_id(), script_id=script_id, created_by=created_by, team_id=team_id)
     db.add(upload)
     db.commit()
 

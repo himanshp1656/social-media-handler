@@ -2,14 +2,20 @@ from googleapiclient.discovery import build
 from sqlalchemy.orm import Session
 
 from app.models import Upload, Analytics, Script, new_id
-from app.youtube.auth import get_credentials
+from app.youtube.auth import get_credentials, is_authenticated
 
 
 def fetch_analytics_for_upload(db: Session, upload: Upload) -> dict | None:
     if not upload.youtube_video_id:
         return None
 
+    if not is_authenticated():
+        return None
+
     creds = get_credentials()
+    if not creds:
+        return None
+
     youtube = build("youtube", "v3", credentials=creds)
 
     response = youtube.videos().list(

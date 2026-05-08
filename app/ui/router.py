@@ -1,13 +1,35 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Form, Request
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
 
 from app.database import get_db
-from app.models import ContentBrief, Script, Beat, Upload, TrendSuggestion, ScheduledPost, CommentReply, User
-from app.feedback.scorer import get_top_scripts
+from app.models import ContentBrief, Script, Beat, Upload, Analytics, TrendSuggestion, ScheduledPost, CommentReply, User, Team, new_id
+from app.feedback.scorer import get_top_scripts, get_bottom_scripts, get_heatmap_data, _engagement_rates, _get_script_analytics
 from app.youtube.auth import is_authenticated
 from app.auth.dependencies import get_current_user
+
+
+def _team_filter(query, model, user):
+    """Apply team_id filter based on user's active team."""
+    if user.active_team_id and hasattr(model, 'team_id'):
+        return query.filter(model.team_id == user.active_team_id)
+    return query
+
+
+def _all_teams(db: Session) -> list[dict]:
+    """Get all teams for the team switcher."""
+    teams = db.query(Team).order_by(Team.name).all()
+    return [{"id": t.id, "name": t.name} for t in teams]
+
+
+def _active_team_name(db: Session, user: User) -> str:
+    """Get active team name."""
+    if not user.active_team_id:
+        return "No Team"
+    team = db.query(Team).filter(Team.id == user.active_team_id).first()
+    return team.name if team else "No Team"
 
 router = APIRouter(tags=["ui"])
 templates = Jinja2Templates(directory="templates")
@@ -21,15 +43,25 @@ def _user_map(db: Session) -> dict:
 
 @router.get("/")
 def dashboard(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    briefs = db.query(ContentBrief).order_by(desc(ContentBrief.created_at)).limit(5).all()
-    suggestions = db.query(TrendSuggestion).order_by(desc(TrendSuggestion.created_at)).limit(5).all()
+    briefs = _team_filter(db.query(ContentBrief), ContentBrief, user).order_by(desc(ContentBrief.created_at)).limit(5).all()
+    suggestions = _team_filter(db.query(TrendSuggestion), TrendSuggestion, user).order_by(desc(TrendSuggestion.created_at)).limit(5).all()
     umap = _user_map(db)
 
+    tid = user.active_team_id
+    brief_q = db.query(func.count(ContentBrief.id))
+    script_q = db.query(func.count(Script.id))
+    upload_q = db.query(func.count(Upload.id)).filter(Upload.upload_status == "uploaded")
+    suggest_q = db.query(func.count(TrendSuggestion.id))
+    if tid:
+        brief_q = brief_q.filter(ContentBrief.team_id == tid)
+        script_q = script_q.filter(Script.team_id == tid)
+        upload_q = upload_q.filter(Upload.team_id == tid)
+        suggest_q = suggest_q.filter(TrendSuggestion.team_id == tid)
     stats = {
-        "briefs": db.query(func.count(ContentBrief.id)).scalar() or 0,
-        "scripts": db.query(func.count(Script.id)).scalar() or 0,
-        "uploads": db.query(func.count(Upload.id)).filter(Upload.upload_status == "uploaded").scalar() or 0,
-        "suggestions": db.query(func.count(TrendSuggestion.id)).scalar() or 0,
+        "briefs": brief_q.scalar() or 0,
+        "scripts": script_q.scalar() or 0,
+        "uploads": upload_q.scalar() or 0,
+        "suggestions": suggest_q.scalar() or 0,
     }
 
     return templates.TemplateResponse("dashboard.html", {
@@ -40,6 +72,8 @@ def dashboard(request: Request, db: Session = Depends(get_db), user: User = Depe
         "stats": stats,
         "briefs": [_brief_dict(b) for b in briefs],
         "suggestions": [_suggestion_dict(s) for s in suggestions],
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
 
 
@@ -58,22 +92,26 @@ def generate_page(request: Request, brief: str = "", template_id: str = "", sugg
         "prefill": brief,
         "template": template,
         "suggestion_id": suggestion_id,
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
 
 
 @router.get("/ui/batch")
-def batch_page(request: Request, user: User = Depends(get_current_user)):
+def batch_page(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     return templates.TemplateResponse("batch.html", {
         "request": request,
         "active": "batch",
         "current_user": user,
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
 
 
 @router.get("/ui/templates")
 def templates_page(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     from app.models import ScriptTemplate
-    tpls = db.query(ScriptTemplate).order_by(desc(ScriptTemplate.created_at)).all()
+    tpls = _team_filter(db.query(ScriptTemplate), ScriptTemplate, user).order_by(desc(ScriptTemplate.created_at)).all()
     umap = _user_map(db)
     return templates.TemplateResponse("templates.html", {
         "request": request,
@@ -81,12 +119,14 @@ def templates_page(request: Request, db: Session = Depends(get_db), user: User =
         "current_user": user,
         "user_map": umap,
         "templates": [_template_dict(t) for t in tpls],
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
 
 
 @router.get("/ui/briefs")
 def briefs_page(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    briefs = db.query(ContentBrief).order_by(desc(ContentBrief.created_at)).limit(50).all()
+    briefs = _team_filter(db.query(ContentBrief), ContentBrief, user).order_by(desc(ContentBrief.created_at)).limit(50).all()
     umap = _user_map(db)
     return templates.TemplateResponse("briefs.html", {
         "request": request,
@@ -94,6 +134,8 @@ def briefs_page(request: Request, db: Session = Depends(get_db), user: User = De
         "current_user": user,
         "user_map": umap,
         "briefs": [_brief_dict(b) for b in briefs],
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
 
 
@@ -104,7 +146,10 @@ def brief_detail_page(brief_id: str, request: Request, db: Session = Depends(get
         return templates.TemplateResponse("briefs.html", {
             "request": request,
             "active": "briefs",
+            "current_user": user,
             "briefs": [],
+            "teams": _all_teams(db),
+            "active_team_name": _active_team_name(db, user),
         })
 
     scripts = db.query(Script).filter(Script.brief_id == brief_id).all()
@@ -137,6 +182,28 @@ def brief_detail_page(brief_id: str, request: Request, db: Session = Depends(get
             "camera": b.camera,
         })
 
+    # Build comparison data for scripts with analytics
+    comparison = []
+    for s in scripts:
+        rates = _engagement_rates(s.views, s.likes, s.comments)
+        analytics = _get_script_analytics(db, s.id)
+        comparison.append({
+            "id": s.id,
+            "title": s.title,
+            "angle": s.angle,
+            "hook_type": s.hook_type,
+            "cta_goal": s.cta_goal,
+            "views": s.views,
+            "likes": s.likes,
+            "comments": s.comments,
+            "score": s.score,
+            "like_rate": rates["like_rate"],
+            "comment_rate": rates["comment_rate"],
+            "engagement_rate": rates["engagement_rate"],
+            "watch_time_minutes": analytics["watch_time_minutes"],
+            "ctr": analytics["ctr"],
+        })
+
     umap = _user_map(db)
     return templates.TemplateResponse("brief_detail.html", {
         "request": request,
@@ -145,9 +212,12 @@ def brief_detail_page(brief_id: str, request: Request, db: Session = Depends(get
         "user_map": umap,
         "brief": _brief_dict(brief),
         "scripts": [_script_dict(s) for s in scripts],
+        "comparison": comparison,
         "beats_map": beats_map,
         "upload_map": upload_map,
         "youtube_authenticated": is_authenticated(),
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
 
 
@@ -155,7 +225,7 @@ def brief_detail_page(brief_id: str, request: Request, db: Session = Depends(get
 def teleprompter_page(script_id: str, request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     script = db.query(Script).filter(Script.id == script_id).first()
     if not script:
-        return templates.TemplateResponse("briefs.html", {"request": request, "active": "briefs", "briefs": []})
+        return templates.TemplateResponse("briefs.html", {"request": request, "active": "briefs", "current_user": user, "briefs": [], "teams": _all_teams(db), "active_team_name": _active_team_name(db, user)})
 
     beats = db.query(Beat).filter(Beat.script_id == script_id).order_by(Beat.beat_number).all()
     return templates.TemplateResponse("teleprompter.html", {
@@ -167,17 +237,21 @@ def teleprompter_page(script_id: str, request: Request, db: Session = Depends(ge
              "voiceover": b.voiceover, "on_screen_text": b.on_screen_text, "visual_cue": b.visual_cue, "camera": b.camera}
             for b in beats
         ],
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
 
 
 @router.get("/ui/trends")
 def trends_page(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    suggestions = db.query(TrendSuggestion).order_by(desc(TrendSuggestion.created_at)).limit(30).all()
+    suggestions = _team_filter(db.query(TrendSuggestion), TrendSuggestion, user).order_by(desc(TrendSuggestion.created_at)).limit(30).all()
     return templates.TemplateResponse("trends.html", {
         "request": request,
         "active": "trends",
         "current_user": user,
         "suggestions": [_suggestion_dict(s) for s in suggestions],
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
 
 
@@ -198,13 +272,10 @@ def calendar_page(request: Request, date: str = "", db: Session = Depends(get_db
     last_day_num = cal_module.monthrange(year, month)[1]
     last_day = datetime(year, month, last_day_num, 23, 59, 59, tzinfo=timezone.utc)
 
-    posts = (
-        db.query(ScheduledPost)
-        .filter(ScheduledPost.scheduled_at >= first_day)
-        .filter(ScheduledPost.scheduled_at <= last_day)
-        .order_by(ScheduledPost.scheduled_at)
-        .all()
-    )
+    pq = db.query(ScheduledPost).filter(ScheduledPost.scheduled_at >= first_day).filter(ScheduledPost.scheduled_at <= last_day)
+    if user.active_team_id:
+        pq = pq.filter(ScheduledPost.team_id == user.active_team_id)
+    posts = pq.order_by(ScheduledPost.scheduled_at).all()
 
     posts_by_date = {}
     for p in posts:
@@ -246,7 +317,7 @@ def calendar_page(request: Request, date: str = "", db: Session = Depends(get_db
     else:
         next_month_date = datetime(year, month + 1, 1)
 
-    scripts = db.query(Script).order_by(desc(Script.created_at)).limit(50).all()
+    scripts = _team_filter(db.query(Script), Script, user).order_by(desc(Script.created_at)).limit(50).all()
 
     return templates.TemplateResponse("calendar.html", {
         "request": request,
@@ -257,16 +328,17 @@ def calendar_page(request: Request, date: str = "", db: Session = Depends(get_db
         "prev_month": prev_month_date.strftime("%Y-%m-%d"),
         "next_month": next_month_date.strftime("%Y-%m-%d"),
         "scripts": [_script_dict(s) for s in scripts],
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
 
 
 @router.get("/ui/comments")
 def comments_page(request: Request, upload_id: str = "", db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    uploads = (
-        db.query(Upload)
-        .filter(Upload.upload_status.in_(["uploaded", "linked"]))
-        .all()
-    )
+    uq = db.query(Upload).filter(Upload.upload_status.in_(["uploaded", "linked"]))
+    if user.active_team_id:
+        uq = uq.filter(Upload.team_id == user.active_team_id)
+    uploads = uq.all()
     upload_list = []
     for u in uploads:
         script = db.query(Script).filter(Script.id == u.script_id).first()
@@ -303,12 +375,17 @@ def comments_page(request: Request, upload_id: str = "", db: Session = Depends(g
         "uploads": upload_list,
         "selected_upload": upload_id,
         "comments": comments,
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
 
 
 @router.get("/ui/insights")
 def insights_page(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    import json as _json
     top = get_top_scripts(db, limit=10)
+    bottom = get_bottom_scripts(db, limit=10)
+    heatmap = get_heatmap_data(db)
     umap = _user_map(db)
     return templates.TemplateResponse("insights.html", {
         "request": request,
@@ -316,19 +393,126 @@ def insights_page(request: Request, db: Session = Depends(get_db), user: User = 
         "current_user": user,
         "user_map": umap,
         "scripts": top,
+        "bottom_scripts": bottom,
+        "heatmap_json": _json.dumps(heatmap),
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
 
 
 @router.get("/ui/lineage/overview")
 def lineage_overview(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    from app.lineage.router import pipeline_stats as _pipeline_stats
-    stats = _pipeline_stats(db, user)
+    import json as _json
+    # Build full graph: ScriptLab -> Trends -> Briefs -> Scripts -> Uploads
+    # Briefs without a trend connect directly to ScriptLab
+    briefs_all = _team_filter(db.query(ContentBrief), ContentBrief, user).all()
+
+    # Compute total score per brief for sorting
+    brief_scores = {}
+    for b in briefs_all:
+        total = db.query(func.coalesce(func.sum(Script.score), 0)).filter(Script.brief_id == b.id).scalar()
+        brief_scores[b.id] = total or 0
+
+    def _build_brief_node(b):
+        b_node = {
+            "type": "brief", "id": b.id,
+            "label": b.raw_brief[:80],
+            "topic": b.topic,
+            "suggestion_id": b.suggestion_id,
+            "created_at": str(b.created_at) if b.created_at else "",
+            "total_score": brief_scores[b.id],
+            "children": [],
+        }
+        scripts = db.query(Script).filter(Script.brief_id == b.id).order_by(desc(Script.score)).all()
+        for s in scripts:
+            s_node = {
+                "type": "script", "id": s.id,
+                "label": s.title, "brief_id": s.brief_id,
+                "angle": s.angle, "hook_type": s.hook_type,
+                "score": s.score or 0, "platform": s.platform,
+                "duration": s.duration, "template_id": s.template_id,
+                "children": [],
+            }
+            uploads = db.query(Upload).filter(Upload.script_id == s.id).all()
+            for u in uploads:
+                a = db.query(Analytics).filter(Analytics.upload_id == u.id).order_by(desc(Analytics.fetched_at)).first()
+                u_node = {
+                    "type": "upload", "id": u.id,
+                    "label": u.youtube_video_id or "pending",
+                    "status": u.upload_status,
+                    "platform": s.platform or "youtube_shorts",
+                    "views": a.views if a else 0,
+                    "likes": a.likes if a else 0,
+                    "comments": a.comments if a else 0,
+                    "ctr": a.ctr if a else 0,
+                    "watch_time_minutes": (a.watch_time_minutes or 0) if a else 0,
+                    "children": [],
+                }
+                s_node["children"].append(u_node)
+            b_node["children"].append(s_node)
+        return b_node
+
+    # Group briefs by suggestion_id
+    trend_briefs = {}  # suggestion_id -> [briefs]
+    manual_briefs = []
+    for b in briefs_all:
+        if b.suggestion_id:
+            trend_briefs.setdefault(b.suggestion_id, []).append(b)
+        else:
+            manual_briefs.append(b)
+
+    # Build all downstream nodes (trends + manual briefs) with their total scores
+    # so we can sort them together by score
+    downstream_items = []  # [(total_score, node)]
+
+    suggestion_ids = list(trend_briefs.keys())
+    if suggestion_ids:
+        trends = db.query(TrendSuggestion).filter(TrendSuggestion.id.in_(suggestion_ids)).all()
+        trend_map = {t.id: t for t in trends}
+        for sid in suggestion_ids:
+            t = trend_map.get(sid)
+            if not t:
+                manual_briefs.extend(trend_briefs[sid])
+                continue
+            t_node = {
+                "type": "trend", "id": t.id,
+                "label": t.keyword,
+                "source": t.source,
+                "score": t.trend_score,
+                "brief": t.suggested_brief,
+                "status": t.status,
+                "children": [],
+            }
+            total = 0
+            for b in sorted(trend_briefs[sid], key=lambda b: brief_scores.get(b.id, 0), reverse=True):
+                t_node["children"].append(_build_brief_node(b))
+                total += brief_scores.get(b.id, 0)
+            downstream_items.append((total, t_node))
+
+    for b in manual_briefs:
+        downstream_items.append((brief_scores.get(b.id, 0), _build_brief_node(b)))
+
+    # Sort all top-level nodes by total score descending
+    downstream_items.sort(key=lambda x: x[0], reverse=True)
+
+    root = {"type": "scriptlab", "id": "scriptlab", "label": "ScriptLab"}
+    downstream = [item[1] for item in downstream_items]
+
+    data = {"root": root, "upstream": [], "downstream": downstream, "versions": [], "stats": {}}
+
     return templates.TemplateResponse("lineage.html", {
         "request": request,
         "active": "lineage",
         "current_user": user,
-        "mode": "overview",
-        "stats": stats,
+        "mode": "entity",
+        "entity": root,
+        "upstream": [],
+        "downstream": downstream,
+        "versions": [],
+        "lineage_stats": {},
+        "lineage_json": _json.dumps(data).replace("</", "<\\/"),
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
 
 
@@ -338,14 +522,14 @@ def lineage_entity(entity_type: str, entity_id: str, request: Request, db: Sessi
     from app.lineage.router import get_lineage as _get_lineage
     data = _get_lineage(entity_type, entity_id, db, user)
     if "error" in data:
+        import json as _json2
+        fallback = {"root": {"type": "scriptlab", "id": "scriptlab", "label": "ScriptLab"}, "upstream": [], "downstream": [], "versions": [], "stats": {}}
         return templates.TemplateResponse("lineage.html", {
-            "request": request, "active": "lineage", "current_user": user, "mode": "overview",
-            "stats": {"funnel": {"trends": 0, "briefs": 0, "scripts": 0, "uploads": 0},
-                      "trend_sourced": {"count": 0, "avg_score": 0, "uploaded": 0},
-                      "manual": {"count": 0, "avg_score": 0, "uploaded": 0},
-                      "template_based": {"count": 0, "avg_score": 0, "uploaded": 0},
-                      "freeform": {"count": 0, "avg_score": 0, "uploaded": 0},
-                      "top_trends": [], "top_templates": []},
+            "request": request, "active": "lineage", "current_user": user, "mode": "entity",
+            "entity": fallback["root"], "upstream": [], "downstream": [], "versions": [], "lineage_stats": {},
+            "lineage_json": _json2.dumps(fallback),
+            "teams": _all_teams(db),
+            "active_team_name": _active_team_name(db, user),
         })
 
     return templates.TemplateResponse("lineage.html", {
@@ -359,7 +543,46 @@ def lineage_entity(entity_type: str, entity_id: str, request: Request, db: Sessi
         "versions": data.get("versions", []),
         "lineage_stats": data.get("stats", {}),
         "lineage_json": _json.dumps(data).replace("</", "<\\/"),
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
     })
+
+
+# ---- Team create ----
+
+@router.get("/ui/team/create")
+def team_create_page(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    return templates.TemplateResponse("team_create.html", {
+        "request": request,
+        "current_user": user,
+        "error": None,
+        "teams": _all_teams(db),
+        "active_team_name": _active_team_name(db, user),
+    })
+
+
+@router.post("/ui/team/create")
+def team_create(
+    request: Request,
+    team_name: str = Form(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    name = team_name.strip()
+    if not name:
+        return templates.TemplateResponse("team_create.html", {
+            "request": request,
+            "current_user": user,
+            "error": "Team name is required",
+            "teams": _all_teams(db),
+            "active_team_name": _active_team_name(db, user),
+        })
+
+    team = Team(id=new_id(), name=name, created_by=user.id)
+    db.add(team)
+    user.active_team_id = team.id
+    db.commit()
+    return RedirectResponse(url="/", status_code=302)
 
 
 # ---- helpers to convert SQLAlchemy models to dicts for templates ----

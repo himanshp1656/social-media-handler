@@ -13,18 +13,16 @@ router = APIRouter(prefix="/trends", tags=["trends"])
 
 @router.post("/suggest")
 def suggest(db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
-    suggestions = suggest_content(db)
+    suggestions = suggest_content(db, team_id=user.active_team_id)
     return {"count": len(suggestions), "suggestions": suggestions}
 
 
 @router.get("/suggestions")
 def list_suggestions(db: Session = Depends(get_db), user: User = Depends(get_current_user_api)):
-    suggestions = (
-        db.query(TrendSuggestion)
-        .order_by(desc(TrendSuggestion.created_at))
-        .limit(20)
-        .all()
-    )
+    q = db.query(TrendSuggestion)
+    if user.active_team_id:
+        q = q.filter(TrendSuggestion.team_id == user.active_team_id)
+    suggestions = q.order_by(desc(TrendSuggestion.created_at)).limit(20).all()
     return [
         {
             "id": s.id,

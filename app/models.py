@@ -10,6 +10,15 @@ def new_id() -> str:
     return generate(size=12)
 
 
+class Team(Base):
+    __tablename__ = "teams"
+
+    id = Column(String, primary_key=True, default=new_id)
+    name = Column(String, nullable=False)
+    created_by = Column(String, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -17,6 +26,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False, index=True)
     display_name = Column(String, nullable=False)
     password_hash = Column(String, nullable=False)
+    active_team_id = Column(String, ForeignKey("teams.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -36,6 +46,7 @@ class ContentBrief(Base):
     topic = Column(String, nullable=False)
     raw_brief = Column(Text, nullable=False)
     suggestion_id = Column(String, ForeignKey("trend_suggestions.id"), nullable=True)
+    team_id = Column(String, ForeignKey("teams.id"), nullable=True, index=True)
     created_by = Column(String, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -62,6 +73,7 @@ class Script(Base):
     likes = Column(Integer, default=0)
     comments = Column(Integer, default=0)
     score = Column(Float, default=0.0)
+    team_id = Column(String, ForeignKey("teams.id"), nullable=True, index=True)
     created_by = Column(String, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -94,6 +106,7 @@ class ScriptTemplate(Base):
     cta_goal = Column(String, nullable=False)
     beat_structure = Column(Text, nullable=False)  # JSON array of beat templates
     source_script_id = Column(String, nullable=True)  # script it was derived from
+    team_id = Column(String, ForeignKey("teams.id"), nullable=True, index=True)
     created_by = Column(String, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -105,6 +118,7 @@ class Upload(Base):
     script_id = Column(String, ForeignKey("scripts.id"), nullable=False)
     youtube_video_id = Column(String, nullable=True)
     upload_status = Column(String, default="pending")  # pending | uploaded | linked | failed
+    team_id = Column(String, ForeignKey("teams.id"), nullable=True, index=True)
     created_by = Column(String, ForeignKey("users.id"), nullable=True)
     uploaded_at = Column(DateTime, nullable=True)
 
@@ -134,6 +148,7 @@ class ScheduledPost(Base):
     youtube_video_id = Column(String, nullable=True)
     error_message = Column(Text, nullable=True)
     notes = Column(Text, nullable=True)
+    team_id = Column(String, ForeignKey("teams.id"), nullable=True, index=True)
     created_by = Column(String, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -160,7 +175,20 @@ class TrendSuggestion(Base):
     trend_score = Column(Float, default=0.0)
     suggested_brief = Column(Text, nullable=False)
     status = Column(String, default="suggested")  # suggested | accepted | rejected | used
+    team_id = Column(String, ForeignKey("teams.id"), nullable=True, index=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class OAuthToken(Base):
+    __tablename__ = "oauth_tokens"
+
+    id = Column(String, primary_key=True, default=new_id)
+    provider = Column(String, nullable=False)  # youtube
+    user_id = Column(String, ForeignKey("users.id"), nullable=True)
+    token = Column(Text, nullable=False)
+    refresh_token = Column(Text, nullable=True)
+    token_uri = Column(String, nullable=True)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class ScriptVersion(Base):

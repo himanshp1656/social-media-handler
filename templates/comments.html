@@ -25,6 +25,10 @@
         {% endfor %}
       </select>
     </div>
+    <a id="videoLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="display:none; background:var(--red-dim); color:var(--red); white-space:nowrap; align-self:center; text-decoration:none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px; margin-right:4px;"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      Watch Video
+    </a>
     <button class="btn btn-secondary" onclick="fetchComments()" id="fetchBtn" disabled>Fetch Comments</button>
     <button class="btn btn-primary" onclick="generateReplies()" id="generateBtn" disabled>Generate Replies</button>
     <button class="btn btn-secondary" onclick="postAllApproved()" id="postAllBtn" disabled>Post All Approved</button>
@@ -173,12 +177,26 @@ const uploadSelect = document.getElementById('uploadSelect');
 const fetchBtn = document.getElementById('fetchBtn');
 const generateBtn = document.getElementById('generateBtn');
 const postAllBtn = document.getElementById('postAllBtn');
+const videoLink = document.getElementById('videoLink');
+
+const videoIdMap = {
+  {% for u in uploads %}
+  "{{ u.id }}": "{{ u.youtube_video_id }}",
+  {% endfor %}
+};
 
 function updateButtons() {
   const hasVideo = uploadSelect.value !== '';
   fetchBtn.disabled = !hasVideo;
   generateBtn.disabled = !hasVideo;
   postAllBtn.disabled = !hasVideo;
+  const ytId = videoIdMap[uploadSelect.value];
+  if (ytId) {
+    videoLink.href = 'https://www.youtube.com/watch?v=' + ytId;
+    videoLink.style.display = 'inline-flex';
+  } else {
+    videoLink.style.display = 'none';
+  }
 }
 updateButtons();
 

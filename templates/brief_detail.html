@@ -24,6 +24,53 @@
 {% endif %}
 
 {% if scripts %}
+
+<!-- Script Comparison Table -->
+{% if comparison and comparison|length > 1 %}
+<div class="card" style="margin-bottom: 20px;">
+  <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Script Comparison</h3>
+  <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 16px;">Side-by-side performance of all scripts from this brief</p>
+  <div class="table-wrap">
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Angle</th>
+        <th>Hook</th>
+        <th>Views</th>
+        <th>Like %</th>
+        <th>Comment %</th>
+        <th>Eng. %</th>
+        <th>CTR</th>
+        <th>Watch Time</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set max_score = comparison|map(attribute='score')|max %}
+      {% for c in comparison|sort(attribute='score', reverse=True) %}
+      <tr{% if c.score == max_score and c.score > 0 %} class="comparison-winner"{% endif %}>
+        <td class="title-cell">
+          {{ c.title }}
+          {% if c.score == max_score and c.score > 0 %}<span class="winner-badge">BEST</span>{% endif %}
+        </td>
+        <td><span class="badge badge-{{ c.angle }}">{{ c.angle.replace('_', ' ') }}</span></td>
+        <td><span class="badge badge-{{ c.hook_type }}">{{ c.hook_type }}</span></td>
+        <td class="num">{{ "{:,}".format(c.views) }}</td>
+        <td class="num" style="color: var(--green);">{{ c.like_rate }}%</td>
+        <td class="num" style="color: var(--cyan);">{{ c.comment_rate }}%</td>
+        <td class="num" style="color: var(--accent); font-weight: 700;">{{ c.engagement_rate }}%</td>
+        <td class="num" style="color: var(--yellow);">{{ c.ctr }}%</td>
+        <td class="num">{{ c.watch_time_minutes }}m</td>
+        <td class="num" style="font-weight: 700;">{% if c.score >= 1000000 %}{{ "%.1fM"|format(c.score / 1000000) }}{% elif c.score >= 1000 %}{{ "%.1fK"|format(c.score / 1000) }}{% else %}{{ c.score }}{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endif %}
+
 {% for s in scripts %}
 {% set uploads = upload_map.get(s.id, []) %}
 {% set beats = beats_map.get(s.id, []) %}
@@ -316,6 +363,26 @@
   .badge-upload-failed { background: rgba(239,68,68,0.15); color: var(--red); }
   .upload-progress-bar { width: 100%; height: 6px; background: var(--bg-input); border-radius: 3px; overflow: hidden; }
   .upload-progress-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+
+  /* Comparison table */
+  .comparison-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .comparison-table th {
+    text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .comparison-table td { padding: 12px; border-bottom: 1px solid var(--border); }
+  .comparison-table tr:last-child td { border-bottom: none; }
+  .comparison-table tr:hover { background: var(--bg-input); }
+  .comparison-table .title-cell { font-weight: 500; max-width: 250px; }
+  .comparison-table .num { font-family: monospace; font-weight: 600; text-align: right; }
+  .comparison-winner { background: rgba(52,211,153,0.05); }
+  .comparison-winner:hover { background: rgba(52,211,153,0.1) !important; }
+  .winner-badge {
+    display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 6px;
+    border-radius: 4px; background: rgba(52,211,153,0.15); color: var(--green);
+    margin-left: 6px; vertical-align: middle;
+  }
 </style>
 
 <script>
