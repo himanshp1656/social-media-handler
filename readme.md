@@ -77,35 +77,80 @@ For a single-server content tool, SQLite is the right choice:
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    FastAPI App                        │
-│                                                       │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │  Trends   │  │ Scripts  │  │ Calendar │           │
-│  │  Router   │  │  Router  │  │  Router  │           │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘           │
-│       │              │              │                  │
-│  ┌────┴─────┐  ┌────┴─────┐  ┌────┴─────┐           │
-│  │ NewsAPI  │  │ AI Gen   │  │ YT Upload│           │
-│  │ Suggester│  │ (Groq)   │  │ (OAuth2) │           │
-│  └──────────┘  └──────────┘  └──────────┘           │
-│                                                       │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │ Feedback │  │ Lineage  │  │ Comments │           │
-│  │ Scorer   │  │ Graph    │  │ AI Reply │           │
-│  └──────────┘  └──────────┘  └──────────┘           │
-│                                                       │
-│  ┌───────────────────────────────────────┐           │
-│  │         SQLite (SQLAlchemy ORM)        │           │
-│  │  Teams | Briefs | Scripts | Uploads    │           │
-│  │  Trends | Analytics | Comments         │           │
-│  └───────────────────────────────────────┘           │
-│                                                       │
-│  ┌───────────────────────────────────────┐           │
-│  │     APScheduler (Background Jobs)      │           │
-│  │  Analytics fetch (6h) | Auto-post (1m) │           │
-│  └───────────────────────────────────────┘           │
-└─────────────────────────────────────────────────────┘
+                          ┌──────────────┐
+                          │   NewsAPI     │
+                          │  (Finance)   │
+                          └──────┬───────┘
+                                 │ headlines
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         FastAPI Application                         │
+│                                                                     │
+│  ┌─────────────────────── API Layer ──────────────────────────┐    │
+│  │                                                             │    │
+│  │  /trends      /scripts     /calendar    /youtube    /auth   │    │
+│  │  /feedback    /lineage     /comments    /ui                 │    │
+│  │                                                             │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│         │               │                │                          │
+│         ▼               ▼                ▼                          │
+│  ┌────────────┐  ┌────────────┐  ┌─────────────┐                  │
+│  │  Trend     │  │  Script    │  │  YouTube    │                  │
+│  │  Suggester │  │  Generator │  │  OAuth2     │                  │
+│  │            │  │            │  │             │                  │
+│  │  Score &   │  │  5 angles  │  │  Upload     │                  │
+│  │  rank news │  │  per brief │  │  Analytics  │                  │
+│  └────────────┘  └─────┬──────┘  └──────┬──────┘                  │
+│                        │                 │                          │
+│                        │    ┌────────────┘                          │
+│                        ▼    ▼                                       │
+│               ┌──────────────────┐                                  │
+│               │  Feedback Loop   │◄──── scores propagate:          │
+│               │                  │      Upload → Script → Brief    │
+│               │  Top 3 winners   │           → Trend               │
+│               │  Bottom 3 losers │                                  │
+│               │       │          │                                  │
+│               │       ▼          │                                  │
+│               │  Injected into   │                                  │
+│               │  next AI prompt  │                                  │
+│               └──────────────────┘                                  │
+│                        │                                            │
+│         ┌──────────────┼──────────────┐                            │
+│         ▼              ▼              ▼                             │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐                     │
+│  │  Lineage   │ │  Insights  │ │  Comment   │                     │
+│  │  Graph     │ │  Heatmap   │ │  AI Reply  │                     │
+│  │            │ │            │ │            │                     │
+│  │  Trend →   │ │  Angle x   │ │  Suggested │                     │
+│  │  Brief →   │ │  Hook perf │ │  responses │                     │
+│  │  Script →  │ │  matrix    │ │            │                     │
+│  │  Upload    │ │            │ │            │                     │
+│  └────────────┘ └────────────┘ └────────────┘                     │
+│                                                                     │
+│  ┌─────────────────── Data Layer ─────────────────────────────┐    │
+│  │                                                             │    │
+│  │  SQLite + SQLAlchemy ORM                                    │    │
+│  │                                                             │    │
+│  │  Teams │ Trends │ Briefs │ Scripts │ Beats │ Templates      │    │
+│  │  Uploads │ Analytics │ Comments │ Scheduled Posts            │    │
+│  │                                                             │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│  ┌─────────────────── Background Jobs ────────────────────────┐    │
+│  │  APScheduler                                                │    │
+│  │  ┌─────────────────┐  ┌──────────────┐  ┌──────────────┐  │    │
+│  │  │ Fetch Analytics │  │ Auto-Upload  │  │ Score Update │  │    │
+│  │  │ every 6 hours   │  │ every 1 min  │  │ after fetch  │  │    │
+│  │  └─────────────────┘  └──────────────┘  └──────────────┘  │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+         │                                          │
+         ▼                                          ▼
+┌──────────────┐                          ┌──────────────┐
+│  YouTube     │                          │  Groq /      │
+│  Data API v3 │                          │  Gemini AI   │
+└──────────────┘                          └──────────────┘
 ```
 
 ## Data Model
