@@ -1,0 +1,15 @@
+venv/
+.venv/
+.git/
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.db
+*.db-journal
+data/
+.DS_Store
+*.egg-info/
+dist/
+ROADMAP.md
